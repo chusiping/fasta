@@ -5,6 +5,7 @@ using System.Web;
 using System.Xml;
 using System.IO;
 using System.Collections.Generic;
+using System.Windows.Forms;
 namespace Zone
 {
 
@@ -26,11 +27,19 @@ namespace Zone
     /// </summary>
     public class Xmlalias
     {
-        private static string _XmlFilePath ="data.xml";
+        private static string _XmlFilePath = "";
+        private static string _XmlFilePath1 = "data.xml";
+        private static string _XmlFilePath2 = "data_html.xml";
         private static XmlDocument xmlDoc = new XmlDocument();
 
-
-
+        public void GetXml1()
+        {
+            _XmlFilePath = _XmlFilePath1;
+        }
+        public void GetXml2()
+        {
+            _XmlFilePath = _XmlFilePath2;
+        }
 
 
         public static string XmlFilePath
@@ -61,6 +70,24 @@ namespace Zone
                     System.Windows.Forms.Application.Exit();
                 }
             }
+            if (!File.Exists(_XmlFilePath2))
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(
+                            "<?xml   version=\"1.0\"   encoding=\"gb2312\"?>" +
+                            "<Element>" +
+                                "<alias alias=\"bing\" cmd=\"http://cn.bing.com\" />" +
+                            "</Element>");
+                try
+                {
+                    doc.Save(_XmlFilePath);
+                }
+                catch (Exception ex)
+                {
+                    //Logger.Trace(ex);
+                    System.Windows.Forms.Application.Exit();
+                }
+            }
         }
         //*********************************************************************
 
@@ -69,7 +96,18 @@ namespace Zone
         //***************读取xml文件***********************
         public static void ReadXml()
         {
-            xmlDoc.RemoveAll();         
+            xmlDoc.RemoveAll();
+            if (string.IsNullOrEmpty(_XmlFilePath))
+            {
+                MessageBox.Show("参数为空！");
+                return;
+            }
+            xmlDoc.Load(_XmlFilePath);
+        }
+        public static void ReadXml(int WhichXmlPath)
+        {
+            xmlDoc.RemoveAll();
+            _XmlFilePath = WhichXmlPath == 1 ? _XmlFilePath1 : _XmlFilePath2;
             xmlDoc.Load(_XmlFilePath);
         }
         //*************************************************
@@ -171,8 +209,8 @@ namespace Zone
         //***************更新节点***********************
         public static void Update(string Old_ss1,string old_ss2,string new_s1, string new_s2)
         {
-            ReadXml();
-
+            //ReadXml();
+            if (new_s2.IndexOf("://") >= 0) { ReadXml(2); } else { ReadXml(1); }
             XmlNodeList nodeList = xmlDoc.SelectSingleNode("Element").ChildNodes;
 
             foreach (XmlNode xn in nodeList)

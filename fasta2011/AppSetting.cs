@@ -7,8 +7,10 @@ namespace fasta2011
 {
     class AppSetting
     {
-        public static string xmlName = @"data.xml";
-        public static string xmlPath = System.Windows.Forms.Application.StartupPath + "\\"  + xmlName;
+        public static string xmlName1 = @"data.xml";
+        public static string xmlName2 = @"data_html.xml";
+        public static string xmlPath1 = System.Windows.Forms.Application.StartupPath + "\\" + xmlName1;
+        public static string xmlPath2 = System.Windows.Forms.Application.StartupPath + "\\" + xmlName2;
         public static string keyWord = "alias";
 
 

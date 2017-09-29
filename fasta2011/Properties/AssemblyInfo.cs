@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // 有关程序集的常规信息通过下列属性集
 // 控制。更改这些属性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("Fasta2014 v4.5.15")]
-[assembly: AssemblyDescription("Copyright ©  2012.1.19")]
+[assembly: AssemblyTitle("Fasta2016 v1.6.8.22")]
+[assembly: AssemblyDescription("Copyright ©  2016.3.24")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("fasta2011")]

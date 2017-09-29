@@ -55,13 +55,18 @@ namespace fasta2011
             string s2 = textBox2.Text.Trim();
             if (s1 == "" || s2 == "") return;
             Xmlalias xls = new Xmlalias();
+            if (IsContainHttp(s2)) { xls.GetXml2(); } else { xls.GetXml1(); }
             int i = xls.Add2(s1, s2);
             if (i == 1) MessageBox.Show("此别名已存在！");
             if (i == -1) MessageBox.Show("添加失败！");
             LoadListView(ListItemIndex);
             RefrushOwner();
         }
-
+        bool IsContainHttp(string text)
+        {
+            if (text.IndexOf("://") >= 0) return true;            
+            return false;
+        }
 
         //**********************  启动窗口  *****************************
         private void Form1_Load(object sender, EventArgs e)
@@ -141,6 +146,7 @@ namespace fasta2011
         void LoadListView()
         {
             LoadListView(0);
+            LoadListView2(0);
         }
 
         //************  给listview 绑定数据 *************************
@@ -180,6 +186,45 @@ namespace fasta2011
                 {
                            
                     
+                }
+            }
+        }
+        //************** edit by jarry 2016-1-23 增加保存html的的xml  ************************
+        void LoadListView2(int i)
+        {
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data_html.xml");
+
+
+            XmlNode xn = xmlDoc.SelectSingleNode("Element");
+
+            XmlNodeList xnl = xn.ChildNodes;
+
+            ListViewItem p = new ListViewItem();            
+            foreach (XmlNode xnf in xnl)
+            {
+                XmlElement xe = (XmlElement)xnf;
+                p = new ListViewItem(new string[] { xe.GetAttribute("alias"), xe.GetAttribute("cmd") });
+                this.listView1.Items.Add(p);
+            }
+            try
+            {
+                listView1.Items[i].Selected = true;
+                listView1.Items[i].EnsureVisible();
+            }
+            catch
+            {
+                try
+                {
+                    i = i - 1;
+                    listView1.Items[i].Selected = true;
+                    listView1.Items[i].EnsureVisible();
+
+                }
+                catch
+                {
+
+
                 }
             }
         }

@@ -14,6 +14,7 @@ using System.Threading;
 using Microsoft.Win32;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 
 
@@ -24,7 +25,8 @@ namespace fasta2011
 {
     public partial class Main : Form,IForm
     {
-
+        private delegate void DG_ReadXml(XmlDocument doc1, string s, ref AutoCompleteStringCollection acsc, ref List<ComboBoxItem> listcb);
+        List<ComboBoxItem> listcb = null;
         CmdType ct = new CmdType();
         private bool windowCreate = false;
 
@@ -41,7 +43,13 @@ namespace fasta2011
             Suggest();
         }
 
-        //******************  打开窗口  ******************************
+        //******************  打开窗口  ******************************/
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, ExactSpelling = true)]
+        public static extern IntPtr GetForegroundWindow(); //获得本窗体的句柄
+        [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "SetForegroundWindow")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);//设置此窗体为活动窗体
+        //定义变量,句柄类型
+        public IntPtr Handle1;
         private void Form1_Load(object sender, EventArgs e)
         {
             //throw new NotImplementedException();
@@ -49,6 +57,8 @@ namespace fasta2011
             ReadXml();
             RegAdd();
             this.Text = GetAssemblyVersion();
+            comboBox1.Focus();
+            Handle1 = this.Handle;
         }
 
 
@@ -79,6 +89,8 @@ namespace fasta2011
             }
             /************************************ 响应热键 按快捷键**********************************/
             const int WM_HOTKEY = 0x0312;
+            Console.WriteLine("m.Msg" + m.Msg);
+            if (m.Msg == null || m.WParam == null) return;
             switch (m.Msg)
             {
                 case WM_HOTKEY:
@@ -125,6 +137,7 @@ namespace fasta2011
                 this.notifyIcon1.Visible = false;
                 this.TopMost = true;
                 this.Activate();
+                this.comboBox1.Focus();
                 try
                 {
                     //************ 隐藏form1 ***************************
@@ -181,7 +194,40 @@ namespace fasta2011
             string s = "";
             XmlDocument doc = new XmlDocument();
 
-            doc.Load(AppSetting.xmlPath);
+            doc.Load(AppSetting.xmlPath1);
+
+            XmlNodeReader reader = new XmlNodeReader(doc);
+
+            while (reader.Read())
+            {
+
+                switch (reader.NodeType)
+                {
+                    case XmlNodeType.Element:
+                        s = reader.Name;
+                        if (s.Equals(AppSetting.keyWord))
+                        {
+
+                            ComboBoxItem cbi1 = new ComboBoxItem();
+                            cbi1.Text = reader.GetAttribute(0);
+                            cbi1.Value = reader.GetAttribute(1);
+                            comboBox1.Items.Add(cbi1);
+                        }
+                        break;
+
+                }
+            }
+
+            ReadXml2();
+        }
+
+        public void ReadXml2()
+        {
+
+            string s = "";
+            XmlDocument doc = new XmlDocument();
+
+            doc.Load(AppSetting.xmlPath2);
 
             XmlNodeReader reader = new XmlNodeReader(doc);
 
@@ -207,25 +253,26 @@ namespace fasta2011
 
 
         }
-
         //******************  执行调用  ******************************
         private void comboBox1_KeyDown(object sender, KeyEventArgs e)
         {
+            string exeUrl = "";
+            string vlaue = "";
             if (e.KeyValue == 13)
             {
-                string exeUrl = "";
-                string vlaue = "";
                 try
                 {
                     exeUrl = comboBox1.Text;
-                    if (exeUrl.Trim() == "") return;
+                    if (exeUrl.Trim() == "")return;
+                    
 
 
                     //******************  遍历aliase检测是否存在exe  ******************************
-                    for (int i = 0; i < comboBox1.Items.Count; i++)
+                    //for (int i = 0; i < comboBox1.Items.Count; i++)
+                    for (int i = 0; i < listcb.Count; i++)
                     {
 
-                        ComboBoxItem cbi = (ComboBoxItem)comboBox1.Items[i];
+                        ComboBoxItem cbi = (ComboBoxItem)listcb[i];
 
 
                         if (exeUrl == cbi.Text)
@@ -301,7 +348,7 @@ namespace fasta2011
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(vlaue.ToString() + "  不存在", "消息内容", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(ex + vlaue.ToString() + "  不存在", "消息内容", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     Logger.Trace(ex, false);
 
                 }
@@ -434,22 +481,53 @@ namespace fasta2011
 
 
         //******************  添加智能提示的列表  ******************************
+        private void ReadXml(XmlDocument doc1, string s, ref AutoCompleteStringCollection acsc, ref List<ComboBoxItem> listcb)
+        {
+            XmlNodeReader reader = new XmlNodeReader(doc1);
+            while (reader.Read())
+            {
+                //判断当前读取得节点类型
+                switch (reader.NodeType)
+                {
+                    case XmlNodeType.Element:
+                        s = reader.Name;
+                        if (s.Equals(AppSetting.keyWord))
+                        {
+                            ComboBoxItem cbi1 = new ComboBoxItem();
+                            cbi1.Text = reader.GetAttribute(0);
+                            cbi1.Value = reader.GetAttribute(1);
+                            listcb.Add(cbi1);
+                            acsc.Add(cbi1.Text);
+                        }
+                        break;
+
+                }
+            }
+            //return acsc;
+        }
+        public bool IsChinese(string CString)
+        {
+            return Regex.IsMatch(CString, @"^[\u4e00-\u9fa5]+$");
+        }
         public void Suggest()
         {
             AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();
             ComboBoxItem cbi1 = new ComboBoxItem();
+            listcb = new List<ComboBoxItem>();
             string s = "";
-            XmlDocument doc = new XmlDocument();
+            XmlDocument doc1 = new XmlDocument();
+            XmlDocument doc2 = new XmlDocument();
 
             try
             {
-                doc.Load(AppSetting.xmlPath);
+                doc1.Load(AppSetting.xmlPath1);
+                doc2.Load(AppSetting.xmlPath2);
             }
             catch
             {
-                if (System.IO.File.Exists(AppSetting.xmlPath))
+                if (System.IO.File.Exists(AppSetting.xmlPath1))
                 {
-                    MessageBox.Show("消息内容", "读取文件" + AppSetting.xmlPath + "错误！", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("消息内容", "读取文件" + AppSetting.xmlPath1 + "错误！", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 else
                 {
@@ -459,7 +537,109 @@ namespace fasta2011
             }
 
 
-            XmlNodeReader reader = new XmlNodeReader(doc);
+            DG_ReadXml dg_readxml1 = new DG_ReadXml(ReadXml);
+            DG_ReadXml dg_readxml2 = new DG_ReadXml(ReadXml);
+
+            dg_readxml1(doc1, s, ref acsc, ref listcb);
+            dg_readxml2(doc2, s, ref acsc, ref listcb);
+
+          
+            this.comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
+            this.comboBox1.AutoCompleteCustomSource = acsc;
+
+           
+              #region 新增加的模糊匹配方案，试行中
+            this.comboBox1.TextUpdate += (a, b) =>
+            {
+                //this.comboBox1.Items.AddRange(listcb.ToArray();
+                var input = this.comboBox1.Text.ToUpper();
+                var _Fist = string.IsNullOrEmpty(input) ? "" : input.Substring(0, 1);
+                if (IsChinese(_Fist))
+                {
+                    
+                    if (string.IsNullOrEmpty(input)) this.comboBox1.Items.AddRange(listcb.ToArray());
+                    else
+                    {
+                        this.comboBox1.Items.Clear();
+                        //var newList = new List<string>();
+                        var newList = new List<ComboBoxItem>();
+                        //data.Where(x => x.IndexOf(input, StringComparison.CurrentCultureIgnoreCase) != -1).ToArray();
+                        foreach (var x in listcb)
+                        {
+                            //if (x.Text.IndexOf(input, StringComparison.CurrentCultureIgnoreCase) != -1)
+                            if (x.Text.Contains(input))
+                            {
+                                newList.Add(x);
+                                Console.WriteLine("x:" + x.Text);
+                                Console.WriteLine("input:" + input);
+                            }
+                        }
+                        if (newList.Count > 0)
+                            this.comboBox1.Items.AddRange(newList.ToArray());
+                        else
+                            this.comboBox1.Items.AddRange(listcb.ToArray());
+
+                    }
+                    this.comboBox1.Select(this.comboBox1.Text.Length, 0);
+                    this.comboBox1.DroppedDown = true;
+                    Cursor = Cursors.Default;
+
+                }
+            };
+              #endregion
+        }
+        //原来的Suggest改写为Suggest2，增加了使用委托的方法调用reader循环
+        public void Suggest2()
+        {
+            AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();
+            ComboBoxItem cbi1 = new ComboBoxItem();
+            string s = "";
+            XmlDocument doc1 = new XmlDocument();
+            XmlDocument doc2 = new XmlDocument();
+
+            try
+            {
+                doc1.Load(AppSetting.xmlPath1);
+                doc2.Load(AppSetting.xmlPath2);
+            }
+            catch
+            {
+                if (System.IO.File.Exists(AppSetting.xmlPath1))
+                {
+                    MessageBox.Show("消息内容", "读取文件" + AppSetting.xmlPath1 + "错误！", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    DoXml.CreateExec();
+                }
+
+            }
+
+
+            XmlNodeReader reader = new XmlNodeReader(doc1);
+            // 读取XML文件中的数据，并显示出来
+            while (reader.Read())
+            {
+                //判断当前读取得节点类型
+                switch (reader.NodeType)
+                {
+                    case XmlNodeType.Element:
+                        s = reader.Name;
+                        if (s.Equals(AppSetting.keyWord))
+                        {
+
+                            cbi1.Text = reader.GetAttribute(0);
+                            cbi1.Value = reader.GetAttribute(1);
+
+                            acsc.Add(cbi1.Text);
+                        }
+                        break;
+
+                }
+            }
+
+            reader = new XmlNodeReader(doc2);
             // 读取XML文件中的数据，并显示出来
             while (reader.Read())
             {
@@ -505,10 +685,13 @@ namespace fasta2011
             HotKey.UnregisterHotKey(Handle, 124);
         }
 
+        //******************  反注册热键  ******************************
         private void Form1_Deactivate(object sender, EventArgs e)
         {
+#if !DEBUG
             this.Hide();
             this.Visible = false;
+#endif
         }
 
 
@@ -516,7 +699,7 @@ namespace fasta2011
         {
             Process proc = new Process();
             proc.StartInfo.FileName = "notepad.exe";
-            proc.StartInfo.Arguments = AppSetting.xmlPath;
+            proc.StartInfo.Arguments = AppSetting.xmlPath1;
             proc.Start();
         }
         private void ShowEdit(string fmName)
@@ -685,3 +868,9 @@ namespace fasta2011
         }
     }
 }
+/*  修改日志
+ *  2016-01-27 
+        将遍历xml文件的方法，改成委托，只有一部分改了
+        将combox的搜索方法，由从左向右搜索改为模糊匹配搜索
+ 
+*/

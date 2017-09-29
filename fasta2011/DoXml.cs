@@ -10,7 +10,7 @@ namespace fasta2011
 {
     public class DoXml
     {
-        public static string FileName =  AppSetting.xmlPath;
+        public static string FileName =  AppSetting.xmlPath1;
         public static void CreateExec()
         {
             if (!File.Exists(FileName))

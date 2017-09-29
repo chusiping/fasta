@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>fasta2011</RootNamespace>
-    <AssemblyName>fasta2011</AssemblyName>
+    <AssemblyName>fasta201608</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Win32Resource>
