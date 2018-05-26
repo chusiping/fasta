@@ -6,10 +6,11 @@ using System.Xml;
 using System.IO;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using fasta2011;
 namespace Zone
 {
-
-    //**********************  定义接口用来刷新父窗口  *****************************
+    #region 定义接口用来刷新父窗口
+    //**********************  定义接口用来刷新父窗口  ****************************
     public interface IForm
     {
         void ReLoadXml();
@@ -19,19 +20,18 @@ namespace Zone
     {
         void CloseNew();
     }
-    
-
-
+    #endregion 
     /// <summary>
     /// XmlHelper 的摘要说明
     /// </summary>
     public class Xmlalias
     {
+        #region 设定xml
         private static string _XmlFilePath = "";
-        private static string _XmlFilePath1 = "data.xml";
-        private static string _XmlFilePath2 = "data_html.xml";
+        private static string _XmlFilePath1 = AppSetting.xmlPath1;
+        private static string _XmlFilePath2 = AppSetting.xmlPath2;
+        private static string _XmlFilePath3 = AppSetting.xmlPath3;
         private static XmlDocument xmlDoc = new XmlDocument();
-
         public void GetXml1()
         {
             _XmlFilePath = _XmlFilePath1;
@@ -40,19 +40,22 @@ namespace Zone
         {
             _XmlFilePath = _XmlFilePath2;
         }
-
-
+        public void GetXml3()
+        {
+            _XmlFilePath = _XmlFilePath3;
+        }
         public static string XmlFilePath
         {
             set { _XmlFilePath = value; }
             get { return _XmlFilePath; }
         }
+         #endregion
 
-
-        //********************初始化创建xml文档***************************
+        #region 初始化创建三种不同的xml文档
+        //***************初始化创建三种不同的xml文档***********************
         public static void CreateXml()
         {
-            if (!File.Exists(_XmlFilePath))
+            if (!File.Exists(_XmlFilePath1))
             {
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(
@@ -76,11 +79,29 @@ namespace Zone
                 doc.LoadXml(
                             "<?xml   version=\"1.0\"   encoding=\"gb2312\"?>" +
                             "<Element>" +
-                                "<alias alias=\"bing\" cmd=\"http://cn.bing.com\" />" +
+                                "<alias alias=\"baidu\" cmd=\"https://www.baidu.com\" />" +
                             "</Element>");
                 try
                 {
-                    doc.Save(_XmlFilePath);
+                    doc.Save(_XmlFilePath2);
+                }
+                catch (Exception ex)
+                {
+                    //Logger.Trace(ex);
+                    System.Windows.Forms.Application.Exit();
+                }
+            }
+            if (!File.Exists(_XmlFilePath3))
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(
+                            "<?xml   version=\"1.0\"   encoding=\"gb2312\"?>" +
+                            "<Element>" +
+                                "<alias alias=\"/auto\" cmd=\"\" />" +
+                            "</Element>");
+                try
+                {
+                    doc.Save(_XmlFilePath3);
                 }
                 catch (Exception ex)
                 {
@@ -89,10 +110,9 @@ namespace Zone
                 }
             }
         }
-        //*********************************************************************
+        #endregion
 
-
-
+        #region 读取xml文件
         //***************读取xml文件***********************
         public static void ReadXml()
         {
@@ -110,7 +130,7 @@ namespace Zone
             _XmlFilePath = WhichXmlPath == 1 ? _XmlFilePath1 : _XmlFilePath2;
             xmlDoc.Load(_XmlFilePath);
         }
-        //*************************************************
+        #endregion
 
         //***************保存xml文件***********************
         public static void SaveXml()

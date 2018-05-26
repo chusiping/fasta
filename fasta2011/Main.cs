@@ -35,14 +35,17 @@ namespace fasta2011
             AssemblyTitleAttribute copyright = (AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute));
             return copyright.Title;
         }
-       
+
+        #region 初始化
         //******************  初始化  ******************************
         public Main()
         {
             InitializeComponent();
             Suggest();
         }
+        #endregion
 
+        #region 打开窗口
         //******************  打开窗口  ******************************/
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, ExactSpelling = true)]
         public static extern IntPtr GetForegroundWindow(); //获得本窗体的句柄
@@ -53,23 +56,24 @@ namespace fasta2011
         private void Form1_Load(object sender, EventArgs e)
         {
             //throw new NotImplementedException();
-            DoXml.CreateExec();
+            //DoXml.CreateExec();此方法已废弃
+            Xmlalias.CreateXml();
             ReadXml();
             RegAdd();
             this.Text = GetAssemblyVersion();
             comboBox1.Focus();
             Handle1 = this.Handle;
         }
+        #endregion
 
-
-
-        /******************************* 重载最小化按钮 **********************************/
+        #region 重载最小化按钮
         const int WM_SYSCOMMAND = 0x112;
         const int SC_CLOSE = 0xF060;
         const int SC_MINIMIZE = 0xF020;
         const int SC_MAXIMIZE = 0xF030;
+        #endregion
 
-
+        #region 最小化事件
         /************************************ 最小化事件 **********************************/
         protected override void WndProc(ref Message m)
         {
@@ -96,7 +100,7 @@ namespace fasta2011
                 case WM_HOTKEY:
                     switch (m.WParam.ToInt32())
                     {
-                        case 123:    //按下的是Alt+D   
+                        case 123:    //按下的是Alt+R 
                             //此处填写快捷键响应代码                               
                             HideForm();
                             break;
@@ -115,6 +119,9 @@ namespace fasta2011
 
             base.WndProc(ref m);
         }
+        #endregion
+
+        #region 隐藏窗口
         /******************************* 隐藏窗口 **********************************/
         public void HideForm()
         {
@@ -153,7 +160,7 @@ namespace fasta2011
                 //this.Show();
             }
         }
-        /*********************************************************************/
+        #endregion
 
         protected override void OnActivated(EventArgs e)
         {
@@ -228,6 +235,37 @@ namespace fasta2011
             XmlDocument doc = new XmlDocument();
 
             doc.Load(AppSetting.xmlPath2);
+
+            XmlNodeReader reader = new XmlNodeReader(doc);
+
+            while (reader.Read())
+            {
+
+                switch (reader.NodeType)
+                {
+                    case XmlNodeType.Element:
+                        s = reader.Name;
+                        if (s.Equals(AppSetting.keyWord))
+                        {
+
+                            ComboBoxItem cbi1 = new ComboBoxItem();
+                            cbi1.Text = reader.GetAttribute(0);
+                            cbi1.Value = reader.GetAttribute(1);
+                            comboBox1.Items.Add(cbi1);
+                        }
+                        break;
+
+                }
+            }
+            ReadXml3();
+        }
+        public void ReadXml3()
+        {
+
+            string s = "";
+            XmlDocument doc = new XmlDocument();
+
+            doc.Load(AppSetting.xmlPath3);
 
             XmlNodeReader reader = new XmlNodeReader(doc);
 
@@ -872,5 +910,6 @@ namespace fasta2011
  *  2016-01-27 
         将遍历xml文件的方法，改成委托，只有一部分改了
         将combox的搜索方法，由从左向右搜索改为模糊匹配搜索
- 
+ *  2018-5-26 
+        增加autokey.xml文件,为autohotkey的快捷键做提示
 */

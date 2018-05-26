@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>fasta2011</RootNamespace>
-    <AssemblyName>fasta201608</AssemblyName>
+    <AssemblyName>Fasta-Pro</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Win32Resource>
@@ -113,6 +113,12 @@
     <Compile Include="DataGridViewNew.Designer.cs">
       <DependentUpon>DataGridViewNew.cs</DependentUpon>
     </Compile>
+    <Compile Include="test.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="test.Designer.cs">
+      <DependentUpon>test.cs</DependentUpon>
+    </Compile>
     <Compile Include="序列化.cs" />
     <Compile Include="进程列表.cs">
       <SubType>Form</SubType>
@@ -135,6 +141,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="test.resx">
+      <DependentUpon>test.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="进程列表.resx">
       <DependentUpon>进程列表.cs</DependentUpon>
       <SubType>Designer</SubType>

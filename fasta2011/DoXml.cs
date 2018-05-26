@@ -10,6 +10,7 @@ namespace fasta2011
 {
     public class DoXml
     {
+         #region 此方法废弃(创建data.xml)
         public static string FileName =  AppSetting.xmlPath1;
         public static void CreateExec()
         {
@@ -32,5 +33,6 @@ namespace fasta2011
                 }                
             }
         }
+         #endregion 
     }
 }

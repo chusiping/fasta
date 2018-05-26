@@ -27,6 +27,7 @@ namespace fasta2011
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new Main());
+                //Application.Run(new test());
             }
             else
             {

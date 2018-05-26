@@ -49,13 +49,14 @@ namespace fasta2011
 
 
         //***************  增加的具体方法  ***********************
+        Xmlalias xls = new Xmlalias();
         void Add()
         {
             string s1 = textBox1.Text.Trim();
             string s2 = textBox2.Text.Trim();
             if (s1 == "" || s2 == "") return;
-            Xmlalias xls = new Xmlalias();
-            if (IsContainHttp(s2)) { xls.GetXml2(); } else { xls.GetXml1(); }
+            GetXml(s1,s2);
+            //if (IsContainHttp(s2)) { xls.GetXml2(); } else { xls.GetXml1(); }
             int i = xls.Add2(s1, s2);
             if (i == 1) MessageBox.Show("此别名已存在！");
             if (i == -1) MessageBox.Show("添加失败！");
@@ -67,7 +68,19 @@ namespace fasta2011
             if (text.IndexOf("://") >= 0) return true;            
             return false;
         }
-
+        void GetXml(string s1,string s2)
+        {
+            string fuhao = AppConfig.ConfigGetValue("app", "autokey_symbol");
+            if (fuhao.Contains(s1.Substring(0, 1)))
+            {
+                xls.GetXml3();
+                return;
+            }
+            if (s2.IndexOf("://") >= 0)
+                xls.GetXml2();
+            else
+                xls.GetXml1();
+        }
         //**********************  启动窗口  *****************************
         private void Form1_Load(object sender, EventArgs e)
         {            
@@ -147,14 +160,16 @@ namespace fasta2011
         {
             LoadListView(0);
             LoadListView2(0);
+            LoadListView3(0);
         }
 
+         #region 读取data.xml绑定到Listview
         //************  给listview 绑定数据 *************************
         void LoadListView(int i)
         {
             XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data.xml");
-
+            //xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data.xml");
+            xmlDoc.Load(AppSetting.xmlName1);
 
             XmlNode xn = xmlDoc.SelectSingleNode("Element");
 
@@ -189,12 +204,15 @@ namespace fasta2011
                 }
             }
         }
+         #endregion
+
+         #region  读取data_html.xml绑定到Listview
         //************** edit by jarry 2016-1-23 增加保存html的的xml  ************************
         void LoadListView2(int i)
         {
             XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data_html.xml");
-
+            //xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data_html.xml");
+            xmlDoc.Load(AppSetting.xmlName2);
 
             XmlNode xn = xmlDoc.SelectSingleNode("Element");
 
@@ -228,6 +246,49 @@ namespace fasta2011
                 }
             }
         }
+         #endregion
+
+         #region  读取data_autokey.xml绑定到Listview
+        //************** edit by jarry 2018-5-26 增加保存html的的xml  ************************
+        void LoadListView3(int i)
+        {
+            XmlDocument xmlDoc = new XmlDocument();
+            //xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data_autokey.xml");
+            xmlDoc.Load(AppSetting.xmlName3);
+
+            XmlNode xn = xmlDoc.SelectSingleNode("Element");
+
+            XmlNodeList xnl = xn.ChildNodes;
+
+            ListViewItem p = new ListViewItem();
+            foreach (XmlNode xnf in xnl)
+            {
+                XmlElement xe = (XmlElement)xnf;
+                p = new ListViewItem(new string[] { xe.GetAttribute("alias"), xe.GetAttribute("cmd") });
+                this.listView1.Items.Add(p);
+            }
+            try
+            {
+                listView1.Items[i].Selected = true;
+                listView1.Items[i].EnsureVisible();
+            }
+            catch
+            {
+                try
+                {
+                    i = i - 1;
+                    listView1.Items[i].Selected = true;
+                    listView1.Items[i].EnsureVisible();
+
+                }
+                catch
+                {
+
+
+                }
+            }
+        }
+        #endregion
 
         int cbmSeleIndex = -1;
         private void newComboxDropDown(object sender, EventArgs s)
@@ -403,7 +464,6 @@ namespace fasta2011
                 }
             }            
         }
-
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyValue == 13)

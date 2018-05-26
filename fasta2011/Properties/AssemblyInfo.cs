@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 // 有关程序集的常规信息通过下列属性集
 // 控制。更改这些属性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("Fasta2016 v1.6.8.22")]
-[assembly: AssemblyDescription("Copyright ©  2016.3.24")]
+[assembly: AssemblyTitle("Fasta-Pro v1.8.5.26")]
+[assembly: AssemblyDescription("Copyright ©  2018.5")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("fasta2011")]
-[assembly: AssemblyCopyright("Copyright ©  2012.1.19")]
-[assembly: AssemblyTrademark("TeckTop.Com")]
+[assembly: AssemblyProduct("Fasta-Pro")]
+[assembly: AssemblyCopyright("Copyright ©  2018.5")]
+[assembly: AssemblyTrademark("Mapked.Com")]
 [assembly: AssemblyCulture("")]
 
 // 将 ComVisible 设置为 false 使此程序集中的类型
