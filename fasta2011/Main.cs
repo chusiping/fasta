@@ -16,27 +16,36 @@ using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-
-
-// 1 异步处理
-// 2 配置热键 
-
 namespace fasta2011
 {
     public partial class Main : Form,IForm
     {
+        #region 定义变量 委托
         private delegate void DG_ReadXml(XmlDocument doc1, string s, ref AutoCompleteStringCollection acsc, ref List<ComboBoxItem> listcb);
         List<ComboBoxItem> listcb = null;
         CmdType ct = new CmdType();
         private bool windowCreate = false;
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, ExactSpelling = true)]
+        public static extern IntPtr GetForegroundWindow(); //获得本窗体的句柄
+        [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "SetForegroundWindow")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);//设置此窗体为活动窗体
+        //定义变量,句柄类型
+        public IntPtr Handle1;
+        #endregion 
 
+        #region 获得版本号
         public string GetAssemblyVersion()
         {
             AssemblyTitleAttribute copyright = (AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute));
-            return copyright.Title;
+            string strDebug = " - debug";
+#if !DEBUG
+            strDebug = "- Release";
+#endif               
+            return copyright.Title+strDebug;
         }
+        #endregion 
 
-        #region 初始化
+        #region 初始化窗体
         //******************  初始化  ******************************
         public Main()
         {
@@ -45,18 +54,9 @@ namespace fasta2011
         }
         #endregion
 
-        #region 打开窗口
-        //******************  打开窗口  ******************************/
-        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, ExactSpelling = true)]
-        public static extern IntPtr GetForegroundWindow(); //获得本窗体的句柄
-        [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "SetForegroundWindow")]
-        public static extern bool SetForegroundWindow(IntPtr hWnd);//设置此窗体为活动窗体
-        //定义变量,句柄类型
-        public IntPtr Handle1;
+        #region Form1_Load
         private void Form1_Load(object sender, EventArgs e)
         {
-            //throw new NotImplementedException();
-            //DoXml.CreateExec();此方法已废弃
             Xmlalias.CreateXml();
             ReadXml();
             RegAdd();
@@ -71,10 +71,6 @@ namespace fasta2011
         const int SC_CLOSE = 0xF060;
         const int SC_MINIMIZE = 0xF020;
         const int SC_MAXIMIZE = 0xF030;
-        #endregion
-
-        #region 最小化事件
-        /************************************ 最小化事件 **********************************/
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == WM_SYSCOMMAND)
@@ -121,47 +117,29 @@ namespace fasta2011
         }
         #endregion
 
-        #region 隐藏窗口
-        /******************************* 隐藏窗口 **********************************/
+        #region Event 隐藏窗口
         public void HideForm()
         {
-            //throw new Exception();
-            if (this.Visible == true)
+            if (this.Visible == true)  // 隐藏ing
             {
-
                 this.Visible = false;
                 this.notifyIcon1.Visible = false;
                 this.TopMost = true;
-
-
-
-                //this.ShowInTaskbar = false;
+                this.ShowInTaskbar = false;
             }
-            else
+            else                     //显示
             {
-                this.Visible = true;
-                this.showWindows();
+                this.Visible = true; 
+                this.Show();
                 this.notifyIcon1.Visible = false;
                 this.TopMost = true;
-                this.Activate();
                 this.comboBox1.Focus();
-                try
-                {
-                    //************ 隐藏form1 ***************************
-                    //Application.OpenForms["Form1"].Dispose();
-                }
-                catch { }
-                //this.BringToFront();
-                //this.ShowInTaskbar = false;                                
-                //this.WindowState = FormWindowSta
-                //this.Visible = true;
-                ////this.ShowInTaskbar = true;
-                //this.WindowState = FormWindowState.Normal;
-                //this.Show();
+                this.Activate();       //360对这个有影响
             }
         }
         #endregion
 
+        #region 激活窗口
         protected override void OnActivated(EventArgs e)
         {
             if (windowCreate)
@@ -170,31 +148,11 @@ namespace fasta2011
                 windowCreate = false;
                 this.notifyIcon1.Visible = false;
             }
-
             base.OnActivated(e);
         }
+        #endregion 
 
-        private void notifyIcon1_DoubleClick(object sender, EventArgs e)
-        {
-            //showWindows();
-        }
-        private void notifyIcon1_Click(object sender, EventArgs e)
-        {
-            //this.notifyIcon1.Visible = false;
-            HideForm();
-        }
-        //********************* 隐藏窗口 *********************
-        public void hidWindows()
-        {
-            this.Hide();
-            this.ShowInTaskbar = false;
-        }
-
-        //***********************  显示窗口  *******************
-        public void showWindows()
-        {
-            this.Visible = true;
-        }
+        #region 读取data.xml
         public void ReadXml()
         {
 
@@ -227,7 +185,9 @@ namespace fasta2011
 
             ReadXml2();
         }
+        #endregion 
 
+        #region 读取html.xml
         public void ReadXml2()
         {
 
@@ -259,6 +219,9 @@ namespace fasta2011
             }
             ReadXml3();
         }
+        #endregion 
+
+        #region 读取autokey.xml
         public void ReadXml3()
         {
 
@@ -291,7 +254,9 @@ namespace fasta2011
 
 
         }
-        //******************  执行调用  ******************************
+        #endregion 
+
+        #region 执行命令
         private void comboBox1_KeyDown(object sender, KeyEventArgs e)
         {
             string exeUrl = "";
@@ -392,8 +357,9 @@ namespace fasta2011
                 }
             }
         }
+        #endregion 
 
-
+        #region 验证是否是数字，中间用","隔开，例： 1001,1002,1003,并计算出其中的个数
         /// <summary>
         /// 验证是否是数字，中间用","隔开，例： 1001,1002,1003,并计算出其中的个数
         /// </summary>
@@ -420,8 +386,9 @@ namespace fasta2011
                 return false;
             }
         }
+         # endregion
 
-        //******************  验证是否是数字   ******************************
+        #region void 验证是否是数字
         bool IsInt(string str)
         {
             bool bl = false;
@@ -435,7 +402,9 @@ namespace fasta2011
             }
             return bl;
         }
-        //******************  拆解输入的字符   ******************************
+        #endregion 
+
+        #region 判断输入字符类型
         int analyse(string stringIn, ref string OutString)
         {
             int i = 0;
@@ -470,8 +439,9 @@ namespace fasta2011
             return i;
 
         }
+        #endregion 
 
-        //******************  取得进程的名称   ******************************
+        #region 取得进程的名称
         string GetCmdString(string alase)
         {
             string str = "";
@@ -491,6 +461,9 @@ namespace fasta2011
             if (str == "") str = alase;
             return str;
         }
+        #endregion 
+
+        #region 定义枚举
         public enum CmdType
         {
             cmd = 0,
@@ -499,7 +472,9 @@ namespace fasta2011
             stock = 3,
             Dos = 4
         }
-        //******************  独立调用Process   ******************************
+        #endregion 
+
+        #region 独立调用Process
         void ExeProcess(string StarInfoFileName)
         {
             Process proc = new Process();
@@ -507,8 +482,9 @@ namespace fasta2011
             proc.StartInfo.Arguments = " ";
             proc.Start();
         }
+        #endregion 
 
-        //******************  独立调用cmd  ******************************
+        #region 独立调用cmd
         void ExeProcessCmd(string CmdString)
         {
             Process proc = new Process();
@@ -516,9 +492,9 @@ namespace fasta2011
             proc.StartInfo.Arguments = " /c " + CmdString;
             proc.Start();
         }
+        #endregion 
 
-
-        //******************  添加智能提示的列表  ******************************
+        #region 添加智能提示的列表
         private void ReadXml(XmlDocument doc1, string s, ref AutoCompleteStringCollection acsc, ref List<ComboBoxItem> listcb)
         {
             XmlNodeReader reader = new XmlNodeReader(doc1);
@@ -543,10 +519,16 @@ namespace fasta2011
             }
             //return acsc;
         }
+        #endregion 
+
+        #region void 中文字符
         public bool IsChinese(string CString)
         {
             return Regex.IsMatch(CString, @"^[\u4e00-\u9fa5]+$");
         }
+        #endregion 
+        
+        #region 自动匹配下拉
         public void Suggest()
         {
             AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();
@@ -555,11 +537,13 @@ namespace fasta2011
             string s = "";
             XmlDocument doc1 = new XmlDocument();
             XmlDocument doc2 = new XmlDocument();
+            XmlDocument doc3 = new XmlDocument();
 
             try
             {
                 doc1.Load(AppSetting.xmlPath1);
                 doc2.Load(AppSetting.xmlPath2);
+                doc3.Load(AppSetting.xmlPath3);
             }
             catch
             {
@@ -567,19 +551,14 @@ namespace fasta2011
                 {
                     MessageBox.Show("消息内容", "读取文件" + AppSetting.xmlPath1 + "错误！", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
-                else
-                {
-                    DoXml.CreateExec();
-                }
-
             }
-
-
             DG_ReadXml dg_readxml1 = new DG_ReadXml(ReadXml);
             DG_ReadXml dg_readxml2 = new DG_ReadXml(ReadXml);
+            DG_ReadXml dg_readxml3 = new DG_ReadXml(ReadXml);
 
             dg_readxml1(doc1, s, ref acsc, ref listcb);
             dg_readxml2(doc2, s, ref acsc, ref listcb);
+            dg_readxml3(doc3, s, ref acsc, ref listcb);
 
           
             this.comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
@@ -627,7 +606,10 @@ namespace fasta2011
             };
               #endregion
         }
-        //原来的Suggest改写为Suggest2，增加了使用委托的方法调用reader循环
+        #endregion 
+
+        
+        #region 原来的Suggest改写为Suggest2，增加了使用委托的方法调用reader循环
         public void Suggest2()
         {
             AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();
@@ -703,8 +685,9 @@ namespace fasta2011
             this.comboBox1.AutoCompleteCustomSource = acsc;
 
         }
+        #endregion
 
-        //******************  注册热键  ******************************
+        #region  注册热键
         private void Form1_Activated(object sender, EventArgs e)
         {
             HotKey.RegisterHotKey(Handle, 123, AppSetting.key_Alt, AppSetting.key_Word);
@@ -714,16 +697,17 @@ namespace fasta2011
             //原写死 HotKey.RegisterHotKey(Handle, 123, HotKey.KeyModifiers.Alt, Keys.R);
 
         }
+        #endregion 
 
-
-        //******************  反注册热键  ******************************
+        #region 反注册热键
         private void Form1_Leave(object sender, EventArgs e)
         {
             HotKey.UnregisterHotKey(Handle, 123);
             HotKey.UnregisterHotKey(Handle, 124);
         }
-
-        //******************  反注册热键  ******************************
+        #endregion
+        
+        #region 失去窗口焦点
         private void Form1_Deactivate(object sender, EventArgs e)
         {
 #if !DEBUG
@@ -731,15 +715,9 @@ namespace fasta2011
             this.Visible = false;
 #endif
         }
+        #endregion
 
-
-        private void Editxml()
-        {
-            Process proc = new Process();
-            proc.StartInfo.FileName = "notepad.exe";
-            proc.StartInfo.Arguments = AppSetting.xmlPath1;
-            proc.Start();
-        }
+        #region ShowEdit
         private void ShowEdit(string fmName)
         {
             bool IsOpen = false;
@@ -776,10 +754,11 @@ namespace fasta2011
                 }    
             }           
         }
+        #endregion
 
+        #region 确定退出程序
         private void IsSureExitApp()
         {
-            //DialogResult response = MessageBox.Show("退出请确认，从启动请按否", "请确认", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
             DialogResult response = DialogResult.Yes;
             if (response == System.Windows.Forms.DialogResult.Yes)
             {
@@ -788,26 +767,21 @@ namespace fasta2011
             }
             else
             {
-                //    comboBox1.Items.Clear();
-                //    Suggest();
-                //    ReadXml();
-                //Application.ExitThread();
                 Restart();
             }
         }
+        #endregion
 
+        #region 刷新重载入
         public void ReLoadXml()
         {
             comboBox1.Items.Clear();
             Suggest();
             ReadXml();
         }
+        #endregion
 
-        private void comboBox1_DropDown(object sender, EventArgs e)
-        {
-
-        }
-        //重启程序
+        #region 重启Restart
         private void Restart()
         {
             Thread thtmp = new Thread(new ParameterizedThreadStart(run));
@@ -815,47 +789,26 @@ namespace fasta2011
             Thread.Sleep(2000);
             thtmp.Start(appName);
         }
+        #endregion
 
+        #region 运行一个进程
         private void run(Object obj)
         {
             Process ps = new Process();
             ps.StartInfo.FileName = obj.ToString();
             ps.Start();
         }
-        /// <summary>
-        /// 从注册表中取值
-        /// </summary>
-        /// <returns></returns>
-        public string GetRegistryKey()
-        {
-            string str = "";
-            RegistryKey pregkey;
-            pregkey = Registry.ClassesRoot.OpenSubKey("HTTP\\shell\\open\\command ", true);
-
-
-
-
-
-
-
-            if (pregkey == null)
-            {
-                str = @"C:\Program Files\Internet Explorer\IEXPLORE.EXE";
-            }
-
-            return str;
-        }
-
-
-        /// <summary>
-        /// 添加启动项到注册表
-        /// </summary>
+        #endregion
+      
+        #region 添加启动项到注册表
         void RegAdd()
         {
             string FullPathFile = Application.ExecutablePath;       //获取带全路径的本程序   
-            Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true).SetValue("Fast2011", FullPathFile);//将本程序加入到注册表的RUN中  
+            Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true).SetValue("Fast-Pro", FullPathFile);//将本程序加入到注册表的RUN中  
         }
-        //============================调用默认的浏览器===============================
+        #endregion
+        
+        #region 调用默认的浏览器
         public enum ShowCommands : int
         {
             SW_HIDE = 0,
@@ -882,12 +835,9 @@ namespace fasta2011
         string lpParameters,
         string lpDirectory,
         ShowCommands nShowCmd);
+        #endregion
 
-        private void Main_KeyPress(object sender, KeyPressEventArgs e)
-        {
-
-        }
-
+        #region 监视键盘输入
         private void Main_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
@@ -895,8 +845,9 @@ namespace fasta2011
                 this.Hide();
             }
         }
+        #endregion
 
-        //**********  监视输入的字符 如果是kill *********************
+        #region
         private void comboBox1_TextChanged(object sender, EventArgs e)
         {
             if (comboBox1.Text == "kill?")
@@ -904,6 +855,7 @@ namespace fasta2011
                 Cmd.Run("taskmgr");
             }
         }
+        #endregion
     }
 }
 /*  修改日志

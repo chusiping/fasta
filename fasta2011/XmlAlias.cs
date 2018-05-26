@@ -10,7 +10,6 @@ using fasta2011;
 namespace Zone
 {
     #region 定义接口用来刷新父窗口
-    //**********************  定义接口用来刷新父窗口  ****************************
     public interface IForm
     {
         void ReLoadXml();
@@ -21,9 +20,7 @@ namespace Zone
         void CloseNew();
     }
     #endregion 
-    /// <summary>
-    /// XmlHelper 的摘要说明
-    /// </summary>
+
     public class Xmlalias
     {
         #region 设定xml
@@ -32,26 +29,17 @@ namespace Zone
         private static string _XmlFilePath2 = AppSetting.xmlPath2;
         private static string _XmlFilePath3 = AppSetting.xmlPath3;
         private static XmlDocument xmlDoc = new XmlDocument();
-        public void GetXml1()
-        {
-            _XmlFilePath = _XmlFilePath1;
-        }
-        public void GetXml2()
-        {
-            _XmlFilePath = _XmlFilePath2;
-        }
-        public void GetXml3()
-        {
-            _XmlFilePath = _XmlFilePath3;
-        }
+        #endregion 
+
+        #region 属性字段 XmlFilePath
         public static string XmlFilePath
         {
             set { _XmlFilePath = value; }
             get { return _XmlFilePath; }
         }
-         #endregion
+        #endregion 
 
-        #region 初始化创建三种不同的xml文档
+        #region 初始化创建三种不同的xml文档(三个方法可以合并一个)
         //***************初始化创建三种不同的xml文档***********************
         public static void CreateXml()
         {
@@ -65,11 +53,10 @@ namespace Zone
                             "</Element>");
                 try
                 {
-                    doc.Save(_XmlFilePath);
+                    doc.Save(_XmlFilePath1);
                 }
                 catch (Exception ex)
                 {
-                    //Logger.Trace(ex);
                     System.Windows.Forms.Application.Exit();
                 }
             }
@@ -87,7 +74,6 @@ namespace Zone
                 }
                 catch (Exception ex)
                 {
-                    //Logger.Trace(ex);
                     System.Windows.Forms.Application.Exit();
                 }
             }
@@ -105,7 +91,6 @@ namespace Zone
                 }
                 catch (Exception ex)
                 {
-                    //Logger.Trace(ex);
                     System.Windows.Forms.Application.Exit();
                 }
             }
@@ -113,107 +98,66 @@ namespace Zone
         #endregion
 
         #region 读取xml文件
-        //***************读取xml文件***********************
-        public static void ReadXml()
+        public static void ReadXml(string path)
         {
             xmlDoc.RemoveAll();
-            if (string.IsNullOrEmpty(_XmlFilePath))
+            if (string.IsNullOrEmpty(path))
             {
                 MessageBox.Show("参数为空！");
                 return;
             }
-            xmlDoc.Load(_XmlFilePath);
+            xmlDoc.Load(path);
         }
-        public static void ReadXml(int WhichXmlPath)
-        {
-            xmlDoc.RemoveAll();
-            _XmlFilePath = WhichXmlPath == 1 ? _XmlFilePath1 : _XmlFilePath2;
-            xmlDoc.Load(_XmlFilePath);
-        }
+        //public static void ReadXml(int WhichXmlPath)
+        //{
+        //    xmlDoc.RemoveAll();
+        //    _XmlFilePath = WhichXmlPath == 1 ? _XmlFilePath1 : _XmlFilePath2;
+        //    xmlDoc.Load(_XmlFilePath);
+        //}
         #endregion
 
-        //***************保存xml文件***********************
-        public static void SaveXml()
-        {            
-            xmlDoc.Save(_XmlFilePath);
+        #region 写入xml文件 
+        public static void SaveXml(string path)
+        {
+            xmlDoc.Save(path);
             Zone.DebugNew.WriteLog("保存xml成功---" + _XmlFilePath);
         }
-        //*************************************************
+        #endregion 
 
-
-        //***************添加节点***********************
-        public static bool Add(string s1, string s2)
+        #region 添加xml节点
+        public static int Add(string s1, string s2)
         {
-            bool bl = true;
-            ReadXml();
+            int blint = -1; // -1 失败
+            ReadXml(Xmlalias.XmlFilePath);
             XmlNode root = xmlDoc.SelectSingleNode("Element");
-
             XmlNodeList xnl = xmlDoc.SelectSingleNode("Element").ChildNodes;
             foreach (XmlNode xn in xnl)
             {
                 XmlElement xe = (XmlElement)xn;
                 if (xe.GetAttribute("alias") == s1)
                 {
-                    bl = false;
+                    blint = 1;             // 1 有重复,则返回
                     break;
                 }
             }
-
-            if (bl == true)
+            if (blint == -1)                 // 如果没有重复,则写入xml
             {
                 XmlElement xe1 = xmlDoc.CreateElement("alias");
                 xe1.SetAttribute("alias", s1);
                 xe1.SetAttribute("cmd", s2);
                 root.AppendChild(xe1);
-                SaveXml();
+                SaveXml(Xmlalias.XmlFilePath);
+                blint = 0;  // 0 添加成功
             }
-
-            return bl;
-
+            return blint;
         }
-        public int Add2(string s1, string s2)
+        #endregion 
+
+        #region 删除xml节点
+        public static void Del(string s1, string s2,string path)
         {
-            int bl = -1;
-            ReadXml();
-            XmlNode root = xmlDoc.SelectSingleNode("Element");
-
+            ReadXml(path);
             XmlNodeList xnl = xmlDoc.SelectSingleNode("Element").ChildNodes;
-            foreach (XmlNode xn in xnl)
-            {
-                XmlElement xe = (XmlElement)xn;
-                if (xe.GetAttribute("alias") == s1)
-                {
-                    bl = 1;
-                    break;
-                }
-            }
-
-            if (bl == -1)
-            {
-                XmlElement xe1 = xmlDoc.CreateElement("alias");
-                xe1.SetAttribute("alias", s1);
-                xe1.SetAttribute("cmd", s2);
-                root.AppendChild(xe1);
-                SaveXml();
-                Zone.DebugNew.WriteLog("alias：" + s1);
-                Zone.DebugNew.WriteLog("root.AppendChild(xe1) ok!");
-                Zone.DebugNew.WriteLog("SaveXml() ok!");
-
-                bl = 0;
-            }
-
-            return bl;
-
-        }
-
-
-        //***************删除节点***********************
-        public static void Del(string s1, string s2)
-        {
-            ReadXml();
-
-            XmlNodeList xnl = xmlDoc.SelectSingleNode("Element").ChildNodes;
-
             foreach (XmlNode xn in xnl)
             {
                 XmlElement xe = (XmlElement)xn;
@@ -223,16 +167,15 @@ namespace Zone
                     break;
                 }
             }
-            SaveXml();
+            SaveXml(path);
         }
+        #endregion
 
-        //***************更新节点***********************
-        public static void Update(string Old_ss1,string old_ss2,string new_s1, string new_s2)
+        #region 更新xml节点
+        public static void Update(string Old_ss1,string old_ss2,string new_s1, string new_s2,string xml_path)
         {
-            //ReadXml();
-            if (new_s2.IndexOf("://") >= 0) { ReadXml(2); } else { ReadXml(1); }
+            ReadXml(xml_path);
             XmlNodeList nodeList = xmlDoc.SelectSingleNode("Element").ChildNodes;
-
             foreach (XmlNode xn in nodeList)
             {
                 XmlElement xe = (XmlElement)xn;
@@ -243,21 +186,8 @@ namespace Zone
                     break;
                 }
             }
-            SaveXml();
+            SaveXml(xml_path);
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        #endregion 
     }
 }

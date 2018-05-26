@@ -8,6 +8,7 @@ namespace fasta2011
 {
     class AppSetting
     {
+         #region 配置const常量
         public static string xmlName1 = @"data.xml";
         public static string xmlName2 = @"data_html.xml";
         public static string xmlName3 = @"data_autokey.xml";
@@ -15,29 +16,16 @@ namespace fasta2011
         public static string xmlPath2 = System.Windows.Forms.Application.StartupPath + "\\" + xmlName2;
         public static string xmlPath3 = System.Windows.Forms.Application.StartupPath + "\\" + xmlName3;
         public static string keyWord = "alias";
-
-
+          
         public static HotKey.KeyModifiers key_Alt = HotKey.KeyModifiers.Alt;
         public static Keys key_Word = (Keys)Enum.Parse(typeof(Keys), "R");
-           
+         #endregion
     }
-    /// 
-    /// C#中动态读写App.config配置文件
-    /// 
     public class AppConfig
     {
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        public AppConfig()
-        {
-            ///
-            /// TODO: 在此处添加构造函数逻辑
-            ///
-        }
-        /// 
-        /// 写操作
-        /// 
+        public AppConfig() {}
+
+         #region 写入App.config
         public static void ConfigSetValue(string strExecutablePath, string AppKey, string AppValue)
         {
             XmlDocument xDoc = new XmlDocument();
@@ -73,9 +61,9 @@ namespace fasta2011
             }
             xDoc.Save(strExecutablePath + ".config");
         }
-        /// 
-        /// 读操作
-        /// 
+         #endregion
+
+         #region 读取App.config
         public static string ConfigGetValue(string strExecutablePath, string appKey)
         {
             XmlDocument xDoc = new XmlDocument();
@@ -97,5 +85,6 @@ namespace fasta2011
                 return "";
             }
         }
+        #endregion 
     }
 }

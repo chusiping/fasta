@@ -15,11 +15,11 @@ namespace fasta2011
 {
     public partial class Form1 : Form,IForm2
     {
+         #region 初始化Form1和ListView
         public static bool IsOpen = false;
         private int ListItemIndex = -1;
         [DllImport("user32")]
         private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-
         public Form1()
         {
             InitializeComponent();
@@ -39,49 +39,41 @@ namespace fasta2011
             this.listView1.Columns.Add("路径",450);
             
         }
+        #endregion 
 
-
-        //***************  增加按钮 事件  ***********************
+         #region 增加添加按钮 button1_Click
         private void button1_Click(object sender, EventArgs e)
-        {
-            Add();
-        }
-
-
-        //***************  增加的具体方法  ***********************
-        Xmlalias xls = new Xmlalias();
-        void Add()
         {
             string s1 = textBox1.Text.Trim();
             string s2 = textBox2.Text.Trim();
-            if (s1 == "" || s2 == "") return;
-            GetXml(s1,s2);
-            //if (IsContainHttp(s2)) { xls.GetXml2(); } else { xls.GetXml1(); }
-            int i = xls.Add2(s1, s2);
+            if (s1 == "") return;   //if (s1 == "" || s2 == "") return;
+            SetXmlFilePath(s1, s2);          //if (IsContainHttp(s2)) { xls.GetXml2(); } else { xls.GetXml1(); }
+            int i = Xmlalias.Add(s1, s2);
             if (i == 1) MessageBox.Show("此别名已存在！");
             if (i == -1) MessageBox.Show("添加失败！");
-            LoadListView(ListItemIndex);
+            LoadListView();
+            textBox1.Clear(); textBox2.Clear(); // 添加完后清空输入框
             RefrushOwner();
         }
-        bool IsContainHttp(string text)
+        #endregion 
+      
+         #region 根据aliase得到xml名称 data|data_html|data_autokey
+        void SetXmlFilePath(string s1,string s2)
         {
-            if (text.IndexOf("://") >= 0) return true;            
-            return false;
-        }
-        void GetXml(string s1,string s2)
-        {
-            string fuhao = AppConfig.ConfigGetValue("app", "autokey_symbol");
+            string fuhao = AppConfig.ConfigGetValue("app", "autokey_symbol");  //从配置App.config里取
             if (fuhao.Contains(s1.Substring(0, 1)))
             {
-                xls.GetXml3();
+                Xmlalias.XmlFilePath = AppSetting.xmlName3;
                 return;
             }
             if (s2.IndexOf("://") >= 0)
-                xls.GetXml2();
+                Xmlalias.XmlFilePath = AppSetting.xmlName2;
             else
-                xls.GetXml1();
+                Xmlalias.XmlFilePath = AppSetting.xmlName1;
         }
-        //**********************  启动窗口  *****************************
+        #endregion 
+
+         #region 启动窗口 Form1_Load
         private void Form1_Load(object sender, EventArgs e)
         {            
             LoadListView();
@@ -89,17 +81,10 @@ namespace fasta2011
             this.listView1.ListViewItemSorter = new Common.ListViewColumnSorter();
             this.listView1.ColumnClick += new ColumnClickEventHandler(Common.ListViewHelper.ListView_ColumnClick);
         }
+         #endregion 
 
-
-        //**********************  修改 事件  *****************************
+         #region 点击修改按钮
         private void button2_Click(object sender, EventArgs e)
-        {
-            update();
-        }
-
-        //***************  修改的具体方法  ***********************
-
-        void update()
         {
             ListViewItem p = new ListViewItem();
             p = listView1.SelectedItems[0];
@@ -112,7 +97,7 @@ namespace fasta2011
 
             if (textBox2.Visible == false)
             {
-                s2 ="";
+                s2 = "";
                 foreach (var item in this.Controls)
                 {
                     if (item is ComboBox)
@@ -131,50 +116,48 @@ namespace fasta2011
                                 if (cbi.Text == "") continue;
                             }
                             bool IsDele = (cbmSeleIndex != -1) && (i == cb.Items.Count - 1);
-                            s2 += cbi.Text.Trim() + (i == cb.Items.Count-1 ? "" : ";");
+                            s2 += cbi.Text.Trim() + (i == cb.Items.Count - 1 ? "" : ";");
                         }
                         if (IsSeleNone)
                         {
                             s2 += cb.Text.Trim() == "" ? "" : ";" + cb.Text;
-                        }                    
+                        }
                     }
                 }
             }
+            SetXmlFilePath(s1, s2);
+            Xmlalias.Update(ss1, ss2, s1, s2, Xmlalias.XmlFilePath);
 
 
-            Xmlalias.Update(ss1, ss2, s1, s2);
+            //textBox1.Text = "";
+            //textBox2.Text = "";
 
 
-            textBox1.Text = "";
-            textBox2.Text = "";
-
-
-            LoadListView(ListItemIndex);
+            LoadListView();
             //SendMessage(listView1.Handle, 500, 200, 200);
             button1.Visible = true;
             button2.Visible = false;
             RefrushOwner();
         }
-
+        #endregion 
+   
+         #region 重新刷新 增删改列表
         void LoadListView()
         {
             LoadListView(0);
             LoadListView2(0);
             LoadListView3(0);
         }
+        #endregion 
 
          #region 读取data.xml绑定到Listview
-        //************  给listview 绑定数据 *************************
         void LoadListView(int i)
         {
             XmlDocument xmlDoc = new XmlDocument();
             //xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data.xml");
             xmlDoc.Load(AppSetting.xmlName1);
-
             XmlNode xn = xmlDoc.SelectSingleNode("Element");
-
             XmlNodeList xnl = xn.ChildNodes;
-
             ListViewItem p = new ListViewItem();
             listView1.Items.Clear();
             foreach (XmlNode xnf in xnl)
@@ -204,20 +187,15 @@ namespace fasta2011
                 }
             }
         }
-         #endregion
+        #endregion
 
          #region  读取data_html.xml绑定到Listview
-        //************** edit by jarry 2016-1-23 增加保存html的的xml  ************************
         void LoadListView2(int i)
         {
             XmlDocument xmlDoc = new XmlDocument();
-            //xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data_html.xml");
             xmlDoc.Load(AppSetting.xmlName2);
-
             XmlNode xn = xmlDoc.SelectSingleNode("Element");
-
             XmlNodeList xnl = xn.ChildNodes;
-
             ListViewItem p = new ListViewItem();            
             foreach (XmlNode xnf in xnl)
             {
@@ -249,17 +227,12 @@ namespace fasta2011
          #endregion
 
          #region  读取data_autokey.xml绑定到Listview
-        //************** edit by jarry 2018-5-26 增加保存html的的xml  ************************
         void LoadListView3(int i)
         {
             XmlDocument xmlDoc = new XmlDocument();
-            //xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data_autokey.xml");
             xmlDoc.Load(AppSetting.xmlName3);
-
             XmlNode xn = xmlDoc.SelectSingleNode("Element");
-
             XmlNodeList xnl = xn.ChildNodes;
-
             ListViewItem p = new ListViewItem();
             foreach (XmlNode xnf in xnl)
             {
@@ -288,7 +261,7 @@ namespace fasta2011
                 }
             }
         }
-        #endregion
+         #endregion
 
         int cbmSeleIndex = -1;
         private void newComboxDropDown(object sender, EventArgs s)
@@ -303,18 +276,14 @@ namespace fasta2011
                         cbmSeleIndex = cb.SelectedIndex;
                     }
                 }
-
             }
         }
 
-        //***************  修改按钮事件  ********************************************
+         #region 修改s1s2快捷键和值
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             ListViewItem p = new ListViewItem();
             p = listView1.Items[ListItemIndex];
-
-
-
             foreach (var item in this.Controls)
             {
                 if (item is ComboBox)
@@ -322,7 +291,6 @@ namespace fasta2011
                     this.Controls.Remove((ComboBox)item);
                 }
             }
-
             string[] arr = p.SubItems[1].Text.Split(';');
             if (arr.Length > 1)
             {
@@ -347,19 +315,14 @@ namespace fasta2011
                 textBox2.Visible = true;
                 textBox2.Text = p.SubItems[1].Text;
             }
-            
-            
-            
-            
             button1.Visible = false;
             button2.Visible = true;
             textBox1.Text = p.SubItems[0].Text;
-
             RefrushOwner();                       
-
-            
         }
-        //***************  删除按钮事件  ********************************************
+        #endregion 
+
+         #region 点击删除
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
             ListViewItem p = new ListViewItem();
@@ -367,15 +330,16 @@ namespace fasta2011
 
             string s1 = p.SubItems[0].Text;
             string s2 = p.SubItems[1].Text;
-            
 
-            Xmlalias.Del(s1, s2);
-            LoadListView(ListItemIndex);
+            SetXmlFilePath(s1, s2);
+            Xmlalias.Del(s1, s2,Xmlalias.XmlFilePath);
+            LoadListView();
             RefrushOwner();
             //SendMessage(listView1.Handle, 500, 200, 200);
         }
-
-        //***************  listView1选中行，得到index号  *****************
+         #endregion
+        
+         #region listView1选中行，得到index号
         private void listView1_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < listView1.Items.Count; i++)
@@ -386,13 +350,16 @@ namespace fasta2011
                 }
             }
         }
+        #endregion 
 
+         #region 关闭本窗
         public void CloseNew()
         {
             this.Close();
         }
+        #endregion 
 
-
+         #region ESC 热键
         //************  按下ESC后 退出 *************************
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
@@ -402,30 +369,34 @@ namespace fasta2011
                 this.Close();
             }
         }
+        #endregion 
 
+         #region 回车确认删除修改
         private void Form1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            bool IsEnter = false;
-            if(e.KeyChar == (char)13) IsEnter =true;
-            if (IsEnter)
+            if (e.KeyChar == (char)13)
             {
                 if (button1.Visible == true)
                 {
-                    Add();
+                    button1_Click(null, null);  //Add();
                 }
                 else
                 {
-                    update();
+                    button2_Click(null, null);  //update();
                 }
             }
         }
+        #endregion 
+
+         #region 双击选中进行修改
         private void listView1_DoubleClick(object sender, EventArgs e)
         {
             listView1_Click(sender, e);
             toolStripMenuItem1_Click(sender, e);
         }
+        #endregion 
 
-        //************  别名快速搜索  *************************
+         #region 别名快速搜索
         int s = 0;
         private void textBox1_TextChanged(object sender, EventArgs e)
         {          
@@ -442,11 +413,6 @@ namespace fasta2011
                     int dt2 = int.Parse(DateTime.Now.ToString("HHssmmfff"));
                     int i2 = (dt2 - s);
                     s = int.Parse(DateTime.Now.ToString("HHssmmfff"));
-
-//                     if ((i2) < 1000)
-//                     {                        
-//                         return; 
-//                     }
                 }
                 
                 foreach (var item in listView1.Items)
@@ -464,6 +430,9 @@ namespace fasta2011
                 }
             }            
         }
+        #endregion 
+
+         #region 回车重新载入
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyValue == 13)
@@ -471,6 +440,9 @@ namespace fasta2011
                 LoadListView();
             }
         }
+        #endregion 
+
+         #region 刷新命令行
         void RefrushOwner()
         {         
             foreach (Form f in Application.OpenForms)
@@ -481,5 +453,6 @@ namespace fasta2011
                 }
             }
         }
-    }
+        #endregion 
+    } 
 }
