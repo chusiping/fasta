@@ -9,6 +9,7 @@ using System.Xml;
 using Zone;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Reflection;
 
 
 namespace fasta2011
@@ -80,6 +81,7 @@ namespace fasta2011
             textBox1.Focus();
             this.listView1.ListViewItemSorter = new Common.ListViewColumnSorter();
             this.listView1.ColumnClick += new ColumnClickEventHandler(Common.ListViewHelper.ListView_ColumnClick);
+            this.Text = ((AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute))).Title;
         }
          #endregion 
 
