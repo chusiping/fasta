@@ -112,6 +112,11 @@
     <Compile Include="DataGridViewNew.Designer.cs">
       <DependentUpon>DataGridViewNew.cs</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="test.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -132,14 +137,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <EmbeddedResource Include="test.resx">
       <DependentUpon>test.cs</DependentUpon>
     </EmbeddedResource>
@@ -176,9 +176,6 @@
     <None Include="Resources\fasta2011.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Image1.bmp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\form_bakimg.bmp" />
   </ItemGroup>
   <ItemGroup>
@@ -213,12 +210,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ico-mapked.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\favicon %281%29.ico" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />

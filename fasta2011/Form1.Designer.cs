@@ -45,7 +45,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(602, 14);
+            this.button1.Location = new System.Drawing.Point(858, 12);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(87, 56);
             this.button1.TabIndex = 0;
@@ -57,7 +57,7 @@
             // 
             this.textBox1.Location = new System.Drawing.Point(78, 14);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(516, 23);
+            this.textBox1.Size = new System.Drawing.Size(757, 23);
             this.textBox1.TabIndex = 1;
             this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             this.textBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox1_KeyDown);
@@ -66,12 +66,12 @@
             // 
             this.textBox2.Location = new System.Drawing.Point(78, 45);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(516, 23);
+            this.textBox2.Size = new System.Drawing.Size(757, 23);
             this.textBox2.TabIndex = 2;
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(602, 14);
+            this.button2.Location = new System.Drawing.Point(858, 13);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(87, 55);
             this.button2.TabIndex = 3;
@@ -83,9 +83,9 @@
             // listView1
             // 
             this.listView1.ContextMenuStrip = this.contextMenuStrip1;
-            this.listView1.Location = new System.Drawing.Point(7, 84);
+            this.listView1.Location = new System.Drawing.Point(8, 84);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(731, 342);
+            this.listView1.Size = new System.Drawing.Size(937, 342);
             this.listView1.TabIndex = 6;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.Click += new System.EventHandler(this.listView1_Click);
@@ -136,7 +136,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(745, 434);
+            this.ClientSize = new System.Drawing.Size(956, 434);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.listView1);

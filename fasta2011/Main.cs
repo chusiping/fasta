@@ -744,6 +744,7 @@ namespace fasta2011
                     Form1 fm1 = new Form1();
                     fm1.Show();
                     fm1.Focus();
+                    fm1.TopMost = true;
                     fm1.textBox1.Focus();
                 }
                 if (fmName == "Form_JinCheng")

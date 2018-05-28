@@ -64,11 +64,12 @@ namespace fasta2011
          #endregion
 
          #region 读取App.config
-        public static string ConfigGetValue(string strExecutablePath, string appKey)
+        public static string ConfigGetValue(string strExecutablePath= "",string appKey ="")
         {
             XmlDocument xDoc = new XmlDocument();
             try
             {
+                strExecutablePath = strExecutablePath == "" ? "app" : strExecutablePath;
                 xDoc.Load(strExecutablePath + ".config");
 
                 XmlNode xNode;

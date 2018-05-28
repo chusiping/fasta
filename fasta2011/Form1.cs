@@ -36,8 +36,10 @@ namespace fasta2011
             //this.listView1.HoverSelection = true;
             //this.listView1.Activation = ItemActivation.Standard; //
             //添加表头
-            this.listView1.Columns.Add("别名",120);
-            this.listView1.Columns.Add("路径",450);
+            int w1 = AppConfig.ConfigGetValue("ListView1_c1_Width") == "" ? 250 : int.Parse(AppConfig.ConfigGetValue("ListView1_c1_Width"));
+            int w2 = AppConfig.ConfigGetValue("ListView1_c2_Width") == "" ? 900 : int.Parse(AppConfig.ConfigGetValue("ListView1_c2_Width"));
+            this.listView1.Columns.Add("别名", w1);
+            this.listView1.Columns.Add("路径", w2);
             
         }
         #endregion 
@@ -422,8 +424,11 @@ namespace fasta2011
                     ListViewItem lv = (ListViewItem)item;
                     if (lv.Text.Contains(sc)|| lv.SubItems[1].Text.Contains(sc))
                     {
+                        //SetXmlFilePath(lv.Text, lv.SubItems[1].Text);  //等待改进
+                        //int w= AppConfig.ConfigGetValue("ListView1_c2_max") == "" ? 250 : int.Parse(AppConfig.ConfigGetValue("ListView1_c2_max"));
+                        //if(Xmlalias.XmlFilePath == AppSetting.xmlName3) this.listView1.Columns[0].Width = w; // 如果是对autohotkey的字段搜索，则拓宽
                         lv.ForeColor = Color.Red;                        
-                        listView1.TopItem = listView1.Items[lv.Index];                        
+                        listView1.TopItem = listView1.Items[lv.Index];
                     }
                     else
                     {
