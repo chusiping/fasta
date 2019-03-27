@@ -63,8 +63,16 @@ namespace fasta2011
             this.Text = GetAssemblyVersion();
             comboBox1.Focus();
             Handle1 = this.Handle;
+            CreateSqliteDB();
         }
         #endregion
+
+        private void CreateSqliteDB()
+        {
+            var db = FastaContext.Instance;
+            var al = new Alias { Name = "test", Path = "aaaaa", Type = "dos" };
+            db.AliasSet.Add(al);db.SaveChanges();
+        }
 
         #region 重载最小化按钮
         const int WM_SYSCOMMAND = 0x112;
