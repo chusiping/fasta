@@ -28,3 +28,5 @@ _ReSharper*/
 *.vssscc
 *.scc
 $tf*/
+packages/
+/.gitignore

@@ -804,8 +804,15 @@ namespace fasta2011
         #region 添加启动项到注册表
         void RegAdd()
         {
-            string FullPathFile = Application.ExecutablePath;       //获取带全路径的本程序   
-            Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true).SetValue("Fast-Pro", FullPathFile);//将本程序加入到注册表的RUN中  
+            try
+            {
+                string FullPathFile = Application.ExecutablePath;       //获取带全路径的本程序   
+                Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true).SetValue("Fast-Pro", FullPathFile);//将本程序加入到注册表的RUN中  
+            }
+            catch (Exception)
+            {
+
+            }
         }
         #endregion
         
@@ -865,4 +872,6 @@ namespace fasta2011
         将combox的搜索方法，由从左向右搜索改为模糊匹配搜索
  *  2018-5-26 
         增加autokey.xml文件,为autohotkey的快捷键做提示
+    2019-3-26
+        将.net框架升级为4.0
 */
