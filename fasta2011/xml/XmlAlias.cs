@@ -118,7 +118,7 @@ namespace Zone
         public static int Add(string s1, string s2)
         {
             int blint = -1; // -1 失败
-            ReadXml(Xmlalias.XmlFilePath);
+            ReadXml(Xmlalias._XmlFilePath);
             XmlNode root = xmlDoc.SelectSingleNode("Element");
             XmlNodeList xnl = xmlDoc.SelectSingleNode("Element").ChildNodes;
             foreach (XmlNode xn in xnl)
@@ -126,7 +126,7 @@ namespace Zone
                 XmlElement xe = (XmlElement)xn;
                 if (xe.GetAttribute("alias") == s1)
                 {
-                    blint = 1;             // 1 有重复,则返回
+                    blint = 2;             // 1 有重复,则返回
                     break;
                 }
             }

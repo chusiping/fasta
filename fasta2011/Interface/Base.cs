@@ -45,11 +45,13 @@ namespace fasta2011
         }
         public override int AddItem(Alias al)
         {
+            Xmlalias.XmlFilePath = SetXmlFilePath(al.Name, al.Path);
             string s = al.Name, s2 = al.Path;            
             return Xmlalias.Add(al.Name, al.Path);
         }
         public override void DelItem(Alias al)
         {
+            Xmlalias.XmlFilePath = SetXmlFilePath(al.Name, al.Path);
             string path = SetXmlFilePath(al.Name, al.Path);
             Xmlalias.Del(al.Name, al.Path, "");
         }

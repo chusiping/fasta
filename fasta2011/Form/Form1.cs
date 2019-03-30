@@ -16,7 +16,7 @@ namespace fasta2011
 {
     public partial class Form1 : Form,IForm2
     {
-         #region 初始化Form1和ListView
+         #region 初始化全局变量
         public static bool IsOpen = false;
         private int ListItemIndex = -1;
         [DllImport("user32")]
@@ -42,7 +42,6 @@ namespace fasta2011
             int w2 = AppConfig.ConfigGetValue("ListView1_c2_Width") == "" ? 900 : int.Parse(AppConfig.ConfigGetValue("ListView1_c2_Width"));
             this.listView1.Columns.Add("别名", w1);
             this.listView1.Columns.Add("路径", w2);
-            
         }
         #endregion
         private void getAlias()
@@ -51,23 +50,32 @@ namespace fasta2011
             string s2 = textBox2.Text.Trim();
             _al = new Alias { Name = s1, Path = s2, Type = "", AddTime = DateTime.Now };
         }
-        #region 增加添加按钮 button1_Click
-        private void button1_Click(object sender, EventArgs e)
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            db.ReadData();
+            db.AliasSet.ForEach(p => this.listView1.Items.Add(new ListViewItem(new string[] { p.Name, p.Path })));
+           
+            textBox1.Focus();
+            this.listView1.ListViewItemSorter = new Common.ListViewColumnSorter();
+            this.listView1.ColumnClick += new ColumnClickEventHandler(Common.ListViewHelper.ListView_ColumnClick);
+            this.Text = ((AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute))).Title;
+        }
+
+        private void Add_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBox1.Text.Trim())) return;
             getAlias();
             int i = db.AddItem(_al);
 
-            //processData = new FastaDB(alias);
-            //int i = processData.Add();
+            if (i == 2) { MessageBox.Show("此别名已存在！"); return; }
+            if (i == 0) {  MessageBox.Show("添加失败！"); return; }
 
-            if (i == 1) MessageBox.Show("此别名已存在！");
-            if (i == 0) MessageBox.Show("添加失败！");
-            LoadListView();
+            this.listView1.Items.Add(new ListViewItem(new string[] { _al.Name, _al.Path }));
+
             textBox1.Clear(); textBox2.Clear(); // 添加完后清空输入框
             RefrushOwner();
         }
-        #endregion 
       
          #region 根据aliase得到xml名称 data|data_html|data_autokey
         void SetXmlFilePath(string s1,string s2)
@@ -85,19 +93,9 @@ namespace fasta2011
         }
         #endregion 
 
-         #region 启动窗口 Form1_Load
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            db.ReadData();
-            db.AliasSet.ForEach(p => this.listView1.Items.Add(new ListViewItem(new string[] { p.Name, p.Path })));
-
-            //LoadListView();
-            textBox1.Focus();
-            this.listView1.ListViewItemSorter = new Common.ListViewColumnSorter();
-            this.listView1.ColumnClick += new ColumnClickEventHandler(Common.ListViewHelper.ListView_ColumnClick);
-            this.Text = ((AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute))).Title;
-        }
-         #endregion 
+        
+       
+        
 
          #region 点击修改按钮
         private void button2_Click(object sender, EventArgs e)
@@ -161,58 +159,11 @@ namespace fasta2011
         void LoadListView()
         {
             listView1.Items.Clear();
-            LoadListView(0, AppSetting.xmlName1);
-            LoadListView(0, AppSetting.xmlName2);
-            LoadListView(0, AppSetting.xmlName3);
+           
         }
         #endregion 
 
-         #region 读取data.xml绑定到Listview
-        void LoadListView(int i,string path)
-        {
-            XmlDocument xmlDoc = new XmlDocument();
-            //xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data.xml");
-            xmlDoc.Load(path);
-            XmlNode xn = xmlDoc.SelectSingleNode("Element");
-            XmlNodeList xnl = xn.ChildNodes;
-            ListViewItem p = new ListViewItem();
-            
-
-            
-            imageList1.ImageSize = new Size(15,15);
-            imageList1.Images.Add(Image.FromFile("1.jpg"));
-            imageList1.Images.Add(Image.FromFile("2.jpg"));
-            listView1.SmallImageList = imageList1;
-
-            foreach (XmlNode xnf in xnl)
-            {
-                XmlElement xe = (XmlElement)xnf;
-                p = new ListViewItem(new string[] { xe.GetAttribute("alias"), xe.GetAttribute("cmd") });
-                p.ImageIndex = 0;
-                this.listView1.Items.Add(p);
-            }
-            try
-            {
-                listView1.Items[i].Selected = true;
-                listView1.Items[i].EnsureVisible();
-            }
-            catch 
-            {
-                try
-                {
-                    i = i - 1;
-                    listView1.Items[i].Selected = true;
-                    listView1.Items[i].EnsureVisible();
-
-                }
-                catch 
-                {
-                           
-                    
-                }
-            }
-        }
-        #endregion
+    
 
         int cbmSeleIndex = -1;
         private void newComboxDropDown(object sender, EventArgs s)
@@ -329,7 +280,7 @@ namespace fasta2011
             {
                 if (button1.Visible == true)
                 {
-                    button1_Click(null, null);  //Add();
+                    Add_Click(null, null);  //Add();
                 }
                 else
                 {
