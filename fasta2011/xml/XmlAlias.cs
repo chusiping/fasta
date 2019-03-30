@@ -9,17 +9,7 @@ using System.Windows.Forms;
 using fasta2011;
 namespace Zone
 {
-    #region 定义接口用来刷新父窗口
-    public interface IForm
-    {
-        void ReLoadXml();
-        void HideForm();
-    }
-    public interface IForm2
-    {
-        void CloseNew();
-    }
-    #endregion 
+   
 
     public class Xmlalias 
     {
@@ -194,10 +184,12 @@ namespace Zone
    
 }
 //2019-3-26 修改逻辑
-//1. 添加接口，使用接口 操作 form1 的 public static int Add(string s1, string s2)
-//2  继承接口，使用 add()添加到sqlite 的db中，添加时，允许关键字重复
-//3，输入别名，select 所有数据，添加到gridview 增加列 ID
-//4  修改别名和链接
+//0  添加Model，使用接口获得数据的List集合  数据可以从xml获得，从可以sqlite获得，sqlserver获得
+//1  将数据集合赋值给combobox  ,赋值给 auto acs
+//2  使用通用model，使用接口，添加一条数据，修改一条数据，删除一条数据
+//3  继承接口，使用 add()添加到sqlite 的db中，添加时，允许关键字重复
+//4  添加帮助窗口 ， 指示操作规范
+
 
 
 // https://blog.csdn.net/zxsean/article/details/52045950  listviewitem 加按钮
