@@ -5,7 +5,7 @@ using SQLite.CodeFirst;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Zone
+namespace fasta2011
 {
     public class FastaDB : IProcessData
     {

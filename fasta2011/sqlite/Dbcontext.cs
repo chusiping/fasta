@@ -5,7 +5,7 @@ using SQLite.CodeFirst;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Zone
+namespace fasta2011
 {
 
     public class FastaContext : DbContext
@@ -28,14 +28,6 @@ namespace Zone
         }
         public DbSet<Alias> AliasSet { get; set; }
     }
-    public class Alias
-    {
-        [Key]
-        public int ID { get; set; }
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public string Type { get; set; }
-        public DateTime AddTime { set { value = DateTime.Now; } }
-    }
+   
 }
 
