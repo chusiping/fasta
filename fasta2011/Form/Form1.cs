@@ -20,8 +20,9 @@ namespace fasta2011
         public static bool IsOpen = false;
         private int ListItemIndex = -1;
         [DllImport("user32")]
-        private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-        IProcessData processData;
+        private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);  
+        private DataBase db = new XmlData(); private Alias _al;
+        private LogMa log = new LogMa();
         public Form1()
         {
             InitializeComponent();
@@ -43,19 +44,24 @@ namespace fasta2011
             this.listView1.Columns.Add("路径", w2);
             
         }
-        #endregion 
-
-         #region 增加添加按钮 button1_Click
-        private void button1_Click(object sender, EventArgs e)
+        #endregion
+        private void getAlias()
         {
             string s1 = textBox1.Text.Trim();
             string s2 = textBox2.Text.Trim();
-            if (s1 == "") return;   //if (s1 == "" || s2 == "") return;
-            SetXmlFilePath(s1, s2);          //if (IsContainHttp(s2)) { xls.GetXml2(); } else { xls.GetXml1(); }
-            var alias = new Alias { Name = s1, Path = s2, Type = "", AddTime = DateTime.Now };
-            processData = new FastaDB(alias);
-            int i = processData.Add();
-            //if (i == 1) MessageBox.Show("此别名已存在！");
+            _al = new Alias { Name = s1, Path = s2, Type = "", AddTime = DateTime.Now };
+        }
+        #region 增加添加按钮 button1_Click
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBox1.Text.Trim())) return;
+            getAlias();
+            int i = db.AddItem(_al);
+
+            //processData = new FastaDB(alias);
+            //int i = processData.Add();
+
+            if (i == 1) MessageBox.Show("此别名已存在！");
             if (i == 0) MessageBox.Show("添加失败！");
             LoadListView();
             textBox1.Clear(); textBox2.Clear(); // 添加完后清空输入框
@@ -81,8 +87,11 @@ namespace fasta2011
 
          #region 启动窗口 Form1_Load
         private void Form1_Load(object sender, EventArgs e)
-        {            
-            LoadListView();
+        {
+            db.ReadData();
+            db.AliasSet.ForEach(p => this.listView1.Items.Add(new ListViewItem(new string[] { p.Name, p.Path })));
+
+            //LoadListView();
             textBox1.Focus();
             this.listView1.ListViewItemSorter = new Common.ListViewColumnSorter();
             this.listView1.ColumnClick += new ColumnClickEventHandler(Common.ListViewHelper.ListView_ColumnClick);
@@ -151,22 +160,23 @@ namespace fasta2011
          #region 重新刷新 增删改列表
         void LoadListView()
         {
-            LoadListView(0);
-            LoadListView2(0);
-            LoadListView3(0);
+            listView1.Items.Clear();
+            LoadListView(0, AppSetting.xmlName1);
+            LoadListView(0, AppSetting.xmlName2);
+            LoadListView(0, AppSetting.xmlName3);
         }
         #endregion 
 
          #region 读取data.xml绑定到Listview
-        void LoadListView(int i)
+        void LoadListView(int i,string path)
         {
             XmlDocument xmlDoc = new XmlDocument();
             //xmlDoc.Load(System.Windows.Forms.Application.StartupPath + "\\" + "data.xml");
-            xmlDoc.Load(AppSetting.xmlName1);
+            xmlDoc.Load(path);
             XmlNode xn = xmlDoc.SelectSingleNode("Element");
             XmlNodeList xnl = xn.ChildNodes;
             ListViewItem p = new ListViewItem();
-            listView1.Items.Clear();
+            
 
             
             imageList1.ImageSize = new Size(15,15);
@@ -203,80 +213,6 @@ namespace fasta2011
             }
         }
         #endregion
-
-         #region  读取data_html.xml绑定到Listview
-        void LoadListView2(int i)
-        {
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(AppSetting.xmlName2);
-            XmlNode xn = xmlDoc.SelectSingleNode("Element");
-            XmlNodeList xnl = xn.ChildNodes;
-            ListViewItem p = new ListViewItem();            
-            foreach (XmlNode xnf in xnl)
-            {
-                XmlElement xe = (XmlElement)xnf;
-                p = new ListViewItem(new string[] { xe.GetAttribute("alias"), xe.GetAttribute("cmd") });
-                this.listView1.Items.Add(p);
-            }
-            try
-            {
-                listView1.Items[i].Selected = true;
-                listView1.Items[i].EnsureVisible();
-            }
-            catch
-            {
-                try
-                {
-                    i = i - 1;
-                    listView1.Items[i].Selected = true;
-                    listView1.Items[i].EnsureVisible();
-
-                }
-                catch
-                {
-
-
-                }
-            }
-        }
-         #endregion
-
-         #region  读取data_autokey.xml绑定到Listview
-        void LoadListView3(int i)
-        {
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(AppSetting.xmlName3);
-            XmlNode xn = xmlDoc.SelectSingleNode("Element");
-            XmlNodeList xnl = xn.ChildNodes;
-            ListViewItem p = new ListViewItem();
-            foreach (XmlNode xnf in xnl)
-            {
-                XmlElement xe = (XmlElement)xnf;
-                p = new ListViewItem(new string[] { xe.GetAttribute("alias"), xe.GetAttribute("cmd") });
-                this.listView1.Items.Add(p);
-            }
-            try
-            {
-                listView1.Items[i].Selected = true;
-                listView1.Items[i].EnsureVisible();
-            }
-            catch
-            {
-                try
-                {
-                    i = i - 1;
-                    listView1.Items[i].Selected = true;
-                    listView1.Items[i].EnsureVisible();
-
-                }
-                catch
-                {
-
-
-                }
-            }
-        }
-         #endregion
 
         int cbmSeleIndex = -1;
         private void newComboxDropDown(object sender, EventArgs s)

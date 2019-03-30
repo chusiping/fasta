@@ -12,9 +12,7 @@ namespace fasta2011
     public abstract class DataBase
     {
         public List<Alias> AliasSet {get;set;}
-        public ComboBox cb { get; set; }
-        public abstract void ReadData();
-        public abstract void SetComboBox();
+        public abstract void ReadData();        
         public abstract int AddItem(Alias al);
         public abstract void  DelItem(Alias al);
         public abstract void EditItem(Alias al,Alias NewAl);
@@ -23,7 +21,7 @@ namespace fasta2011
     {
         public override void ReadData()
         {
-            AliasSet.Clear();
+            AliasSet = new List<Alias>();
             ReadXml(AppSetting.xmlPath1);
             ReadXml(AppSetting.xmlPath2);
             ReadXml(AppSetting.xmlPath3);
@@ -45,17 +43,9 @@ namespace fasta2011
                 }
             }
         }
-        public override void SetComboBox()
-        {
-            cb.Items.Clear();
-            foreach (var x in AliasSet)
-            {
-                string s = x.Name, s2 = x.Path;
-                cb.Items.Add(new ComboBoxItem { Text = x.Name, Value = x.Path });
-            }            
-        }
         public override int AddItem(Alias al)
         {
+            string s = al.Name, s2 = al.Path;            
             return Xmlalias.Add(al.Name, al.Path);
         }
         public override void DelItem(Alias al)
