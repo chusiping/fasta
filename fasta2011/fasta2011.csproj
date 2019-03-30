@@ -115,6 +115,7 @@
     <Compile Include="AppSetting.cs" />
     <Compile Include="CmdRun.cs" />
     <Compile Include="ComboBoxItem.cs" />
+    <Compile Include="sqliteData.cs" />
     <Compile Include="debugModel.cs" />
     <Compile Include="DoXml.cs" />
     <Compile Include="Form1.cs">

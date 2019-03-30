@@ -21,6 +21,7 @@ namespace fasta2011
         private int ListItemIndex = -1;
         [DllImport("user32")]
         private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+        IProcessData processData;
         public Form1()
         {
             InitializeComponent();
@@ -51,9 +52,11 @@ namespace fasta2011
             string s2 = textBox2.Text.Trim();
             if (s1 == "") return;   //if (s1 == "" || s2 == "") return;
             SetXmlFilePath(s1, s2);          //if (IsContainHttp(s2)) { xls.GetXml2(); } else { xls.GetXml1(); }
-            int i = Xmlalias.Add(s1, s2);
-            if (i == 1) MessageBox.Show("此别名已存在！");
-            if (i == -1) MessageBox.Show("添加失败！");
+            var alias = new Alias { Name = s1, Path = s2, Type = "", AddTime = DateTime.Now };
+            processData = new FastaDB(alias);
+            int i = processData.Add();
+            //if (i == 1) MessageBox.Show("此别名已存在！");
+            if (i == 0) MessageBox.Show("添加失败！");
             LoadListView();
             textBox1.Clear(); textBox2.Clear(); // 添加完后清空输入框
             RefrushOwner();
@@ -164,10 +167,18 @@ namespace fasta2011
             XmlNodeList xnl = xn.ChildNodes;
             ListViewItem p = new ListViewItem();
             listView1.Items.Clear();
+
+            
+            imageList1.ImageSize = new Size(15,15);
+            imageList1.Images.Add(Image.FromFile("1.jpg"));
+            imageList1.Images.Add(Image.FromFile("2.jpg"));
+            listView1.SmallImageList = imageList1;
+
             foreach (XmlNode xnf in xnl)
             {
                 XmlElement xe = (XmlElement)xnf;
                 p = new ListViewItem(new string[] { xe.GetAttribute("alias"), xe.GetAttribute("cmd") });
+                p.ImageIndex = 0;
                 this.listView1.Items.Add(p);
             }
             try

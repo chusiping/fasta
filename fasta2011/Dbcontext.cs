@@ -35,7 +35,7 @@ namespace Zone
         public string Name { get; set; }
         public string Path { get; set; }
         public string Type { get; set; }
-        public DateTime AddTime { get { return DateTime.Now; } }
+        public DateTime AddTime { set { value = DateTime.Now; } }
     }
 }
 

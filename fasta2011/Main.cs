@@ -719,8 +719,8 @@ namespace fasta2011
         private void Form1_Deactivate(object sender, EventArgs e)
         {
 #if !DEBUG
-            this.Hide();
-            this.Visible = false;
+            //this.Hide();
+            //this.Visible = false;
 #endif
         }
         #endregion
@@ -872,6 +872,11 @@ namespace fasta2011
             }
         }
         #endregion
+
+        private void comboBox1_KeyUp(object sender, KeyEventArgs e)
+        {
+
+        }
     }
 }
 /*  修改日志

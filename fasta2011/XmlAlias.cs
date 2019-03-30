@@ -21,7 +21,7 @@ namespace Zone
     }
     #endregion 
 
-    public class Xmlalias
+    public class Xmlalias 
     {
         #region 设定xml
         private static string _XmlFilePath = "";
@@ -190,4 +190,15 @@ namespace Zone
         }
         #endregion 
     }
+
+   
 }
+//2019-3-26 修改逻辑
+//1. 添加接口，使用接口 操作 form1 的 public static int Add(string s1, string s2)
+//2  继承接口，使用 add()添加到sqlite 的db中，添加时，允许关键字重复
+//3，输入别名，select 所有数据，添加到gridview 增加列 ID
+//4  修改别名和链接
+
+
+// https://blog.csdn.net/zxsean/article/details/52045950  listviewitem 加按钮
+// https://books.google.com.sg/books?id=cvhIDwAAQBAJ&pg=PT301&lpg=PT301&dq=ListViewItem+%E6%B7%BB%E5%8A%A0%E5%9B%BE%E6%A0%87&source=bl&ots=EPmK_RMIDa&sig=ACfU3U3R1rMTwU2qH0R0bR1fGzuU48ObvQ&hl=zh-CN&sa=X&ved=2ahUKEwi4uLS_0qLhAhUTg-YKHWwnCfsQ6AEwBnoECAkQAQ#v=onepage&q&f=false
