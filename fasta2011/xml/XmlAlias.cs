@@ -137,7 +137,7 @@ namespace Zone
                 xe1.SetAttribute("cmd", s2);
                 root.AppendChild(xe1);
                 SaveXml(Xmlalias.XmlFilePath);
-                blint = 0;  // 0 添加成功
+                blint = 1;  // 0 添加成功
             }
             return blint;
         }

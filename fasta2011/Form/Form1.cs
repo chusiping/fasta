@@ -16,7 +16,7 @@ namespace fasta2011
 {
     public partial class Form1 : Form,IForm2
     {
-         #region 初始化全局变量
+        #region 初始化全局变量
         public static bool IsOpen = false;
         private int ListItemIndex = -1;
         [DllImport("user32")]
@@ -69,12 +69,13 @@ namespace fasta2011
             int i = db.AddItem(_al);
 
             if (i == 2) { MessageBox.Show("此别名已存在！"); return; }
-            if (i == 0) {  MessageBox.Show("添加失败！"); return; }
-
-            this.listView1.Items.Add(new ListViewItem(new string[] { _al.Name, _al.Path }));
-
-            textBox1.Clear(); textBox2.Clear(); // 添加完后清空输入框
-            RefrushOwner();
+            if (i == 0) { MessageBox.Show("添加失败！"); return; }
+            if (i == 1) {
+                MessageBox.Show("添加成功！");  
+                this.listView1.Items.Add(new ListViewItem(new string[] { _al.Name, _al.Path }));
+                textBox1.Clear(); textBox2.Clear(); // 添加完后清空输入框
+                RefrushOwner();
+            }
         }
       
          #region 根据aliase得到xml名称 data|data_html|data_autokey
@@ -158,7 +159,7 @@ namespace fasta2011
          #region 重新刷新 增删改列表
         void LoadListView()
         {
-            listView1.Items.Clear();
+          
            
         }
         #endregion 
