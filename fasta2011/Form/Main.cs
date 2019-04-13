@@ -70,8 +70,8 @@ namespace fasta2011
         private void CreateSqliteDB()
         {
             var db = FastaContext.Instance;
-            var al = new Alias { Name = "test", Path = "aaaaa", Type = "dos" };
-            db.AliasSet.Add(al);db.SaveChanges();
+            //var al = new Alias { Name = "test", Path = "aaaaa", Type = "dos" };  //测试
+            //db.AliasSet.Add(al);db.SaveChanges(); //测试
         }
 
         #region 重载最小化按钮

@@ -21,7 +21,7 @@ namespace fasta2011
         private int ListItemIndex = -1;
         [DllImport("user32")]
         private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);  
-        private DataBase db = new XmlData(); private Alias _al;
+        private DataBase db = new sqliteData(); private Alias _al;
         private LogMa log = new LogMa();
         public Form1()
         {
@@ -50,12 +50,17 @@ namespace fasta2011
             string s2 = textBox2.Text.Trim();
             _al = new Alias { Name = s1, Path = s2, Type = "", AddTime = DateTime.Now };
         }
-
+        private void LoadDataToListView(bool IsFromDB = true)   //是否从库中加载
+        {
+            if(IsFromDB)db.ReadData();
+            List<Alias> ls = db.AliasSet;                       // text1搜索的时候改为内存集合搜索，不用每次都找数据库
+            listView1.Items.Clear();
+            ls.ForEach(p => this.listView1.Items.Add(new ListViewItem(new string[] { p.Name, p.Path })));
+            textBox1.Clear(); textBox2.Clear();                 // 添加完后清空输入框
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
-            db.ReadData();
-            db.AliasSet.ForEach(p => this.listView1.Items.Add(new ListViewItem(new string[] { p.Name, p.Path })));
-           
+            LoadDataToListView();
             textBox1.Focus();
             this.listView1.ListViewItemSorter = new Common.ListViewColumnSorter();
             this.listView1.ColumnClick += new ColumnClickEventHandler(Common.ListViewHelper.ListView_ColumnClick);
@@ -67,14 +72,12 @@ namespace fasta2011
             if (string.IsNullOrWhiteSpace(textBox1.Text.Trim())) return;
             getAlias();
             int i = db.AddItem(_al);
-
             if (i == 2) { MessageBox.Show("此别名已存在！"); return; }
             if (i == 0) { MessageBox.Show("添加失败！"); return; }
             if (i == 1) {
-                MessageBox.Show("添加成功！");  
-                this.listView1.Items.Add(new ListViewItem(new string[] { _al.Name, _al.Path }));
-                textBox1.Clear(); textBox2.Clear(); // 添加完后清空输入框
+                LoadDataToListView();                
                 RefrushOwner();
+                MessageBox.Show("添加成功！");
             }
         }
       
@@ -303,11 +306,13 @@ namespace fasta2011
         int s = 0;
         private void textBox1_TextChanged(object sender, EventArgs e)
         {          
+            //TODO  把这个条件分离出来，解耦到最低
             if (button1.Visible == true)
             {
                 string sc = textBox1.Text.Trim().ToLower();
                 if ( (sc == ""|| sc.Length < 2 ))
                 {
+                    if (string.IsNullOrWhiteSpace(sc)) LoadDataToListView(false);
                     if (sc.Length < 2) s = int.Parse(DateTime.Now.ToString("HHssmmfff"));
                     return;
                 }
@@ -330,7 +335,7 @@ namespace fasta2011
                         listView1.TopItem = listView1.Items[lv.Index];
                     }
                     else
-                    {
+                    {                        
                         listView1.Items.Remove(lv);
                     }                    
                 }
