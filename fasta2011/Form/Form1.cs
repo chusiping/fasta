@@ -23,6 +23,7 @@ namespace fasta2011
         private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);  
         private DataBase db = new sqliteData(); private Alias _al;
         private LogMa log = new LogMa();
+        enum ActType { Add,Edit,Del };
         public Form1()
         {
             InitializeComponent();
@@ -32,30 +33,48 @@ namespace fasta2011
             this.listView1.Scrollable = true;//有滚动条
             this.listView1.HeaderStyle = ColumnHeaderStyle.Clickable;//对表头进行设置
             this.listView1.FullRowSelect = true;//是否可以选择行
-            
+
 
             //this.listView1.HotTracking = true;// 当选择此属性时则HoverSelection自动为true和Activation属性为oneClick
             //this.listView1.HoverSelection = true;
             //this.listView1.Activation = ItemActivation.Standard; //
             //添加表头
+            int w0 = AppConfig.ConfigGetValue("ListView1_c1_Width") == "" ? 35 : int.Parse(AppConfig.ConfigGetValue("ListView1_c1_Width"));
             int w1 = AppConfig.ConfigGetValue("ListView1_c1_Width") == "" ? 250 : int.Parse(AppConfig.ConfigGetValue("ListView1_c1_Width"));
             int w2 = AppConfig.ConfigGetValue("ListView1_c2_Width") == "" ? 900 : int.Parse(AppConfig.ConfigGetValue("ListView1_c2_Width"));
+            this.listView1.Columns.Add("ID", w0);
             this.listView1.Columns.Add("别名", w1);
             this.listView1.Columns.Add("路径", w2);
         }
         #endregion
-        private void getAlias()
+        private void GetAlias(ActType act)
         {
             string s1 = textBox1.Text.Trim();
             string s2 = textBox2.Text.Trim();
-            _al = new Alias { Name = s1, Path = s2, Type = "", AddTime = DateTime.Now };
+            ListViewItem p = new ListViewItem();
+            p = ListItemIndex == -1 ? null : listView1.Items[ListItemIndex];  //鼠标点击时，已经得到行号
+            switch (act)
+            {
+                case ActType.Add:
+                    _al = new Alias { Name = s1, Path = s2, Type = "", AddTime = DateTime.Now };
+                    break;
+                case ActType.Edit:
+                    _al = new Alias { ID = int.Parse(p.SubItems[0].Text), Name = s1, Path = s2, Type = "", AddTime = DateTime.Now };
+                    break;
+                case ActType.Del:
+                    _al = new Alias { ID = int.Parse(p.SubItems[0].Text) };
+                    break;
+                default:
+                    break;
+            }
+            ListItemIndex = -1;
         }
         private void LoadDataToListView(bool IsFromDB = true)   //是否从库中加载
         {
             if(IsFromDB)db.ReadData();
             List<Alias> ls = db.AliasSet;                       // text1搜索的时候改为内存集合搜索，不用每次都找数据库
             listView1.Items.Clear();
-            ls.ForEach(p => this.listView1.Items.Add(new ListViewItem(new string[] { p.Name, p.Path })));
+            ls.ForEach(p => this.listView1.Items.Add(new ListViewItem(new string[] {p.ID.ToString(), p.Name, p.Path })));
             textBox1.Clear(); textBox2.Clear();                 // 添加完后清空输入框
         }
         private void Form1_Load(object sender, EventArgs e)
@@ -70,7 +89,7 @@ namespace fasta2011
         private void Add_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBox1.Text.Trim())) return;
-            getAlias();
+            GetAlias(ActType.Add);
             int i = db.AddItem(_al);
             if (i == 2) { MessageBox.Show("此别名已存在！"); return; }
             if (i == 0) { MessageBox.Show("添加失败！"); return; }
@@ -97,62 +116,12 @@ namespace fasta2011
         }
         #endregion 
 
-        
-       
-        
-
          #region 点击修改按钮
         private void button2_Click(object sender, EventArgs e)
         {
-            ListViewItem p = new ListViewItem();
-            p = listView1.SelectedItems[0];
-
-            string ss1 = p.SubItems[0].Text;
-            string ss2 = p.SubItems[1].Text;
-
-            string s1 = textBox1.Text.Trim();
-            string s2 = textBox2.Text.Trim();
-
-            if (textBox2.Visible == false)
-            {
-                s2 = "";
-                foreach (var item in this.Controls)
-                {
-                    if (item is ComboBox)
-                    {
-                        ComboBox cb = (ComboBox)item;
-                        cb.Visible = false;
-                        textBox2.Visible = true;
-                        bool IsSeleNone = (cbmSeleIndex == -1);
-                        for (int i = 0; i < cb.Items.Count; i++)
-                        {
-                            ComboBoxItem cbi = new ComboBoxItem();
-                            cbi = (ComboBoxItem)cb.Items[i];
-                            if (cbmSeleIndex == i)
-                            {
-                                cbi.Text = cb.Text;
-                                if (cbi.Text == "") continue;
-                            }
-                            bool IsDele = (cbmSeleIndex != -1) && (i == cb.Items.Count - 1);
-                            s2 += cbi.Text.Trim() + (i == cb.Items.Count - 1 ? "" : ";");
-                        }
-                        if (IsSeleNone)
-                        {
-                            s2 += cb.Text.Trim() == "" ? "" : ";" + cb.Text;
-                        }
-                    }
-                }
-            }
-            SetXmlFilePath(s1, s2);
-            Xmlalias.Update(ss1, ss2, s1, s2, Xmlalias.XmlFilePath);
-
-
-            //textBox1.Text = "";
-            //textBox2.Text = "";
-
-
-            LoadListView();
-            //SendMessage(listView1.Handle, 500, 200, 200);
+            GetAlias(ActType.Edit);
+            db.EditItem(_al,_al);
+            LoadDataToListView();
             button1.Visible = true;
             button2.Visible = false;
             RefrushOwner();
@@ -219,11 +188,11 @@ namespace fasta2011
             else
             {
                 textBox2.Visible = true;
-                textBox2.Text = p.SubItems[1].Text;
+                textBox2.Text = p.SubItems[2].Text;
             }
             button1.Visible = false;
             button2.Visible = true;
-            textBox1.Text = p.SubItems[0].Text;
+            textBox1.Text = p.SubItems[1].Text;
             RefrushOwner();                       
         }
         #endregion 
@@ -231,17 +200,10 @@ namespace fasta2011
          #region 点击删除
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
-            ListViewItem p = new ListViewItem();
-            p = listView1.Items[ListItemIndex];
-
-            string s1 = p.SubItems[0].Text;
-            string s2 = p.SubItems[1].Text;
-
-            SetXmlFilePath(s1, s2);
-            Xmlalias.Del(s1, s2,Xmlalias.XmlFilePath);
-            LoadListView();
-            RefrushOwner();
-            //SendMessage(listView1.Handle, 500, 200, 200);
+            GetAlias(ActType.Del);
+            db.DelItem(_al); 
+            LoadDataToListView();
+            RefrushOwner();            
         }
          #endregion
         
@@ -340,16 +302,6 @@ namespace fasta2011
                     }                    
                 }
             }            
-        }
-        #endregion 
-
-         #region 回车重新载入
-        private void textBox1_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyValue == 13)
-            {
-                LoadListView();
-            }
         }
         #endregion 
 

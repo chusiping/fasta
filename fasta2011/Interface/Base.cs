@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -93,15 +94,15 @@ namespace fasta2011
             return rt;
         }
         public override void EditItem(Alias al, Alias NewAl)
-        {
-            var aal = db.AliasSet.Where(u => u.ID == al.ID).FirstOrDefault();
-            aal = NewAl;
+        {            
+            var aal = db.AliasSet.Find(al.ID);
+            aal.Name = NewAl.Name; aal.Path = NewAl.Path;        
             db.SaveChanges();   
         }
         public override void DelItem(Alias al)
         {
-            db.AliasSet.Attach(al); //实例化一个T_Users对象，并指定Id的值  T_Users user = new T_Users() { Id = 1 };
-            db.AliasSet.Remove(al);
+            var aal = db.AliasSet.Find(al.ID); 
+            db.AliasSet.Remove(aal);
             db.SaveChanges();
         }
     }
