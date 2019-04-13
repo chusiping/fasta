@@ -47,10 +47,12 @@ namespace fasta2011
             this.listView1.Columns.Add("路径", w2);
         }
         #endregion
+
+        //获取实体，准备增删改
         private void GetAlias(ActType act)
         {
             string s1 = textBox1.Text.Trim();
-            string s2 = textBox2.Text.Trim();
+            string s2 = LineProcess();
             ListViewItem p = new ListViewItem();
             p = ListItemIndex == -1 ? null : listView1.Items[ListItemIndex];  //鼠标点击时，已经得到行号
             switch (act)
@@ -96,26 +98,9 @@ namespace fasta2011
             if (i == 1) {
                 LoadDataToListView();                
                 RefrushOwner();
-                MessageBox.Show("添加成功！");
+                LineChange(false);
             }
         }
-      
-         #region 根据aliase得到xml名称 data|data_html|data_autokey
-        void SetXmlFilePath(string s1,string s2)
-        {
-            string fuhao = AppConfig.ConfigGetValue("app", "autokey_symbol");  //从配置App.config里取
-            if (fuhao.Contains(s1.Substring(0, 1)))
-            {
-                Xmlalias.XmlFilePath = AppSetting.xmlName3;
-                return;
-            }
-            if (s2.IndexOf("://") >= 0)
-                Xmlalias.XmlFilePath = AppSetting.xmlName2;
-            else
-                Xmlalias.XmlFilePath = AppSetting.xmlName1;
-        }
-        #endregion 
-
          #region 点击修改按钮
         private void button2_Click(object sender, EventArgs e)
         {
@@ -125,18 +110,9 @@ namespace fasta2011
             button1.Visible = true;
             button2.Visible = false;
             RefrushOwner();
+            LineChange(false);
         }
         #endregion 
-   
-         #region 重新刷新 增删改列表
-        void LoadListView()
-        {
-          
-           
-        }
-        #endregion 
-
-    
 
         int cbmSeleIndex = -1;
         private void newComboxDropDown(object sender, EventArgs s)
@@ -159,40 +135,21 @@ namespace fasta2011
         {
             ListViewItem p = new ListViewItem();
             p = listView1.Items[ListItemIndex];
-            foreach (var item in this.Controls)
-            {
-                if (item is ComboBox)
-                {
-                    this.Controls.Remove((ComboBox)item);
-                }
-            }
-            string[] arr = p.SubItems[1].Text.Split(';');
+
+            string s = p.SubItems[2].Text;
+            string[] arr = p.SubItems[2].Text.Split(';');
+
             if (arr.Length > 1)
             {
-                ComboBox cb = new ComboBox();
-                cb.Location = new Point(textBox2.Location.X, textBox2.Location.Y);
-                cb.Width = 445;                
-                cb.DropDownWidth = 440;
-                cb.DropDownClosed += new EventHandler(newComboxDropDown);
-               
-                for (int i = 0; i < arr.Length; i++)
-                {
-                    ComboBoxItem cm = new ComboBoxItem();
-                    cm.Text = arr[i].ToString();
-                    if (cm.Text.Trim() != "") cb.Items.Add(cm);                    
-                }
-                textBox2.Visible = false;
-                cbmSeleIndex = -1;
-                this.Controls.Add(cb);
-            }
-            else
-            {
-                textBox2.Visible = true;
-                textBox2.Text = p.SubItems[2].Text;
+                s = s.Replace(";", "\r\n");
+                textBox2.Height = textBox2.Height * arr.Length;
+                LineChange();
+                button3.Visible = true;
             }
             button1.Visible = false;
             button2.Visible = true;
             textBox1.Text = p.SubItems[1].Text;
+            textBox2.Text = s;            
             RefrushOwner();                       
         }
         #endregion 
@@ -203,7 +160,7 @@ namespace fasta2011
             GetAlias(ActType.Del);
             db.DelItem(_al); 
             LoadDataToListView();
-            RefrushOwner();            
+            RefrushOwner();           
         }
          #endregion
         
@@ -228,7 +185,7 @@ namespace fasta2011
         #endregion 
 
          #region ESC 热键
-        //************  按下ESC后 退出 *************************
+        //************  按键  *************************
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
@@ -236,6 +193,22 @@ namespace fasta2011
                 RefrushOwner();
                 this.Close();
             }
+            if(e.Modifiers == Keys.Control && e.KeyCode == Keys.Enter)
+            {
+                LineChange();
+            }
+            if ((int)e.Modifiers == ((int)Keys.Control + (int)Keys.Shift) && e.KeyCode == Keys.Enter)
+            {
+                LineChange(false);
+            }
+        }
+        private void LineChange(bool IsMultiline = true)
+        {
+            textBox2.Multiline = IsMultiline;
+            if(IsMultiline && textBox2.Height < 380) textBox2.Height += 20;
+            listView1.Visible = !IsMultiline;
+            textBox2.ScrollBars = ScrollBars.Both;
+            button3.Visible = IsMultiline;
         }
         #endregion 
 
@@ -250,7 +223,7 @@ namespace fasta2011
                 }
                 else
                 {
-                    button2_Click(null, null);  //update();
+                    LineChange();                   
                 }
             }
         }
@@ -261,6 +234,7 @@ namespace fasta2011
         {
             listView1_Click(sender, e);
             toolStripMenuItem1_Click(sender, e);
+            LineProcess();
         }
         #endregion 
 
@@ -317,5 +291,22 @@ namespace fasta2011
             }
         }
         #endregion 
+
+        private string LineProcess()
+        {
+            if (textBox2.Multiline == false) return textBox2.Text.Trim();
+            string s = textBox2.Text.Trim();
+            s = s.Replace("\r\n", ";");
+            return s;
+        }
+        //取消多行
+        private void button3_Click(object sender, EventArgs e)
+        {
+            LineChange(false);
+            button3.Visible = false;
+            button2.Visible = false;
+            button1.Visible = true;
+            LoadDataToListView(false);
+        }
     } 
 }

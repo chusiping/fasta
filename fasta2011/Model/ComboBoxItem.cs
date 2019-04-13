@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace fasta2011
@@ -23,6 +24,6 @@ namespace fasta2011
         public string Name { get; set; }
         public string Path { get; set; }
         public string Type { get; set; }
-        public DateTime AddTime { set { value = DateTime.Now; } }
+        public DateTime AddTime { get; set; }
     }
 }
