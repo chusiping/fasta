@@ -6,6 +6,14 @@ using System.Text;
 
 namespace fasta2011
 {
+    public enum CmdType
+    {
+        cmd = 0,
+        kill = 1,
+        exe = 2,
+        stock = 3,
+        Dos = 4
+    }
     public class ComboBoxItem
     {
         private string _text = null;
@@ -25,5 +33,11 @@ namespace fasta2011
         public string Path { get; set; }
         public string Type { get; set; }
         public DateTime AddTime { get; set; }
+    }
+    public class ExeAlias
+    {
+        public string text { get; set; }
+        public string value { get; set; }        
+        public CmdType cmdType { get; set; }
     }
 }

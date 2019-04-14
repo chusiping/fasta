@@ -32,6 +32,7 @@ namespace fasta2011
         //定义变量,句柄类型
         public IntPtr Handle1;
         private DataBase db = new sqliteData(); private Alias _al;
+        LogMa log = new LogMa();
         #endregion 
 
         #region 获得版本号
@@ -280,6 +281,10 @@ namespace fasta2011
         #region 执行命令
         private void comboBox1_KeyDown(object sender, KeyEventArgs e)
         {
+            //1. 取出combox1的值，通过连续空格分割成数组，取出text和value
+            //2. 通过值去判断使用exe http，还是别
+            //3. 执行
+
             string exeUrl = "";
             string vlaue = "";
             if (e.KeyValue == 13)
@@ -548,14 +553,22 @@ namespace fasta2011
             return Regex.IsMatch(CString, @"^[\u4e00-\u9fa5]+$");
         }
         #endregion 
-        
+        private string KongGeProcess(string s)
+        {
+            string ss = s;
+            while(ss.Length < 60)
+            {
+                ss += " ";
+            }
+            return ss;
+        }
         #region 自动匹配下拉
         public void Suggest()
         {
             listcb = new List<ComboBoxItem>();
             AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();            
             List<Alias> ls = db.AliasSet;            
-            ls.ForEach(p => acsc.Add(p.Name + "     " + p.Path ));
+            ls.ForEach(p => acsc.Add(KongGeProcess(p.Name) + p.Path ));
             ls.ForEach(p => listcb.Add(new ComboBoxItem { Text = p.Name,Value = p.Path  }));
             this.comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
@@ -783,10 +796,7 @@ namespace fasta2011
         }
         #endregion
 
-        private void comboBox1_KeyUp(object sender, KeyEventArgs e)
-        {
 
-        }
     }
 }
 /*  修改日志
