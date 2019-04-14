@@ -31,6 +31,7 @@ namespace fasta2011
         public static extern bool SetForegroundWindow(IntPtr hWnd);//设置此窗体为活动窗体
         //定义变量,句柄类型
         public IntPtr Handle1;
+        private DataBase db = new sqliteData(); private Alias _al;
         #endregion 
 
         #region 获得版本号
@@ -50,20 +51,30 @@ namespace fasta2011
         public Main()
         {
             InitializeComponent();
-            Suggest();
+            //Suggest();
         }
         #endregion
 
+        private void LoadData(bool IsFromDB = true)   //是否从库中加载
+        {
+            if (IsFromDB) db.ReadData();
+            List<Alias> ls = db.AliasSet;                      
+            comboBox1.Items.Clear();
+            ls.ForEach(p => comboBox1.Items.Add(new ComboBoxItem { Text = p.Name, Value = p.Path }));                         
+        }
         #region Form1_Load
         private void Form1_Load(object sender, EventArgs e)
         {
-            Xmlalias.CreateXml();
-            ReadXml();
+            //ReadXml(AppSetting.xmlPath1);
+            //ReadXml(AppSetting.xmlPath2);
+            //ReadXml(AppSetting.xmlPath3);
+            LoadData();
             RegAdd();
             this.Text = GetAssemblyVersion();
             comboBox1.Focus();
             Handle1 = this.Handle;
             CreateSqliteDB();
+            Suggest();
         }
         #endregion
 
@@ -161,13 +172,13 @@ namespace fasta2011
         #endregion 
 
         #region 读取data.xml
-        public void ReadXml()
+        public void ReadXml(string path)
         {
 
             string s = "";
             XmlDocument doc = new XmlDocument();
 
-            doc.Load(AppSetting.xmlPath1);
+            doc.Load(path);
 
             XmlNodeReader reader = new XmlNodeReader(doc);
 
@@ -184,7 +195,9 @@ namespace fasta2011
                             ComboBoxItem cbi1 = new ComboBoxItem();
                             cbi1.Text = reader.GetAttribute(0);
                             cbi1.Value = reader.GetAttribute(1);
-                            comboBox1.Items.Add(cbi1);
+                            var al = new Alias { Name = reader.GetAttribute(0), Path = reader.GetAttribute(1), AddTime = DateTime.Now };
+                            db.AddItem(al);
+                            //comboBox1.Items.Add(cbi1);
                         }
                         break;
 
@@ -539,42 +552,16 @@ namespace fasta2011
         #region 自动匹配下拉
         public void Suggest()
         {
-            AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();
-            ComboBoxItem cbi1 = new ComboBoxItem();
             listcb = new List<ComboBoxItem>();
-            string s = "";
-            XmlDocument doc1 = new XmlDocument();
-            XmlDocument doc2 = new XmlDocument();
-            XmlDocument doc3 = new XmlDocument();
-
-            try
-            {
-                doc1.Load(AppSetting.xmlPath1);
-                doc2.Load(AppSetting.xmlPath2);
-                doc3.Load(AppSetting.xmlPath3);
-            }
-            catch
-            {
-                if (System.IO.File.Exists(AppSetting.xmlPath1))
-                {
-                    MessageBox.Show("消息内容", "读取文件" + AppSetting.xmlPath1 + "错误！", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
-            DG_ReadXml dg_readxml1 = new DG_ReadXml(ReadXml);
-            DG_ReadXml dg_readxml2 = new DG_ReadXml(ReadXml);
-            DG_ReadXml dg_readxml3 = new DG_ReadXml(ReadXml);
-
-            dg_readxml1(doc1, s, ref acsc, ref listcb);
-            dg_readxml2(doc2, s, ref acsc, ref listcb);
-            dg_readxml3(doc3, s, ref acsc, ref listcb);
-
-          
+            AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();            
+            List<Alias> ls = db.AliasSet;            
+            ls.ForEach(p => acsc.Add(p.Name + "     " + p.Path ));
+            ls.ForEach(p => listcb.Add(new ComboBoxItem { Text = p.Name,Value = p.Path  }));
             this.comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-            this.comboBox1.AutoCompleteCustomSource = acsc;
+            this.comboBox1.AutoCompleteCustomSource = acsc;            
 
-           
-              #region 新增加的模糊匹配方案，试行中
+            #region 新增加的模糊匹配方案，试行中
             this.comboBox1.TextUpdate += (a, b) =>
             {
                 //this.comboBox1.Items.AddRange(listcb.ToArray();
@@ -617,83 +604,6 @@ namespace fasta2011
         #endregion 
 
         
-        #region 原来的Suggest改写为Suggest2，增加了使用委托的方法调用reader循环
-        public void Suggest2()
-        {
-            AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();
-            ComboBoxItem cbi1 = new ComboBoxItem();
-            string s = "";
-            XmlDocument doc1 = new XmlDocument();
-            XmlDocument doc2 = new XmlDocument();
-
-            try
-            {
-                doc1.Load(AppSetting.xmlPath1);
-                doc2.Load(AppSetting.xmlPath2);
-            }
-            catch
-            {
-                if (System.IO.File.Exists(AppSetting.xmlPath1))
-                {
-                    MessageBox.Show("消息内容", "读取文件" + AppSetting.xmlPath1 + "错误！", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                else
-                {
-                    DoXml.CreateExec();
-                }
-
-            }
-
-
-            XmlNodeReader reader = new XmlNodeReader(doc1);
-            // 读取XML文件中的数据，并显示出来
-            while (reader.Read())
-            {
-                //判断当前读取得节点类型
-                switch (reader.NodeType)
-                {
-                    case XmlNodeType.Element:
-                        s = reader.Name;
-                        if (s.Equals(AppSetting.keyWord))
-                        {
-
-                            cbi1.Text = reader.GetAttribute(0);
-                            cbi1.Value = reader.GetAttribute(1);
-
-                            acsc.Add(cbi1.Text);
-                        }
-                        break;
-
-                }
-            }
-
-            reader = new XmlNodeReader(doc2);
-            // 读取XML文件中的数据，并显示出来
-            while (reader.Read())
-            {
-                //判断当前读取得节点类型
-                switch (reader.NodeType)
-                {
-                    case XmlNodeType.Element:
-                        s = reader.Name;
-                        if (s.Equals(AppSetting.keyWord))
-                        {
-
-                            cbi1.Text = reader.GetAttribute(0);
-                            cbi1.Value = reader.GetAttribute(1);
-
-                            acsc.Add(cbi1.Text);
-                        }
-                        break;
-
-                }
-            }
-            this.comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-            this.comboBox1.AutoCompleteCustomSource = acsc;
-
-        }
-        #endregion
 
         #region  注册热键
         private void Form1_Activated(object sender, EventArgs e)
@@ -786,7 +696,7 @@ namespace fasta2011
         {
             comboBox1.Items.Clear();
             Suggest();
-            ReadXml();
+            LoadData();
         }
         #endregion
 
