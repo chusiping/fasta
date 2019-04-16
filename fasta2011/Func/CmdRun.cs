@@ -7,11 +7,13 @@ using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Threading;
 
 namespace fasta2011
 {
     public class Cmd
     {
+        #region 变量设定
         private const byte VK_LWIN = (byte)Keys.LWin;
         private const byte VK_R = (byte)Keys.R;
         private const int KEYEVENTF_KEYUP = 0x02;
@@ -29,7 +31,7 @@ namespace fasta2011
 
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(int hWnd, uint Msg, int wParam, string lParam);
-
+        #endregion
 
         public static void Run(object _CmdText)
         {
@@ -72,106 +74,146 @@ namespace fasta2011
             }
         }
 
-        public static ExeAlias AnalyseUrl(string stringIn, string OutString)
+        public static ExeAlias AnalyseUrl(Alias al)
         {
-            var ea = new ExeAlias();
+            string stringIn = al.Name, OutString = al.Path;
+            var fc = new Func(); var ea = new ExeAlias();
             //1 是网页
             //2 dos命令
             //3 k 杀死进程
             //4 资源管理器
             //5 
-            
+
 
             if (stringIn.IndexOf("kill ") >= 0 || stringIn.IndexOf(" kill") >= 0 || stringIn.IndexOf(" k") >= 0)
             {
                 string NameOrID = stringIn.Replace("kill", ""); NameOrID = NameOrID.Replace("k", ""); NameOrID = NameOrID.Replace(" ", "");
-                if (Cmd.IsInt(NameOrID))
-                {
-                    OutString = "ntsd -c q -p " + NameOrID;
-                }
+                if (fc.IsInt(NameOrID)) OutString = "ntsd -c q -p " + NameOrID;
                 else
                 {
-                    OutString = string.Format("tskill \"{0}\"", GetCmdString(NameOrID.Trim(),null));
+                    OutString = string.Format("tskill \"{0}\"", fc.GetCmdString(NameOrID.Trim(), null));
                 }
-                      //kill 结束进程命令
+                //kill 结束进程命令
+                ea.text = stringIn;
+                ea.value = OutString;
+                ea.cmdType = CmdType.kill;
+                return ea;
             }
             else if (OutString.IndexOf("dos:") >= 0)
             {
                 OutString = OutString.Replace("dos:", "");
-                //return 4;
+                ea.text = stringIn;
+                ea.value = OutString;
+                ea.cmdType = CmdType.Dos;
+                return ea;
             }
-            else if (IsNumber(stringIn))
+            else if (fc.IsNumber(stringIn))
             {
                 //i = 3;  //是数字符串               
             }
             else if (OutString == "")
             {
                 //i = 2;      //cmd命令
+                ea.text = stringIn;
+                ea.value = stringIn;
+                ea.cmdType = CmdType.cmd;
             }
-
+            ea.text = stringIn;
+            ea.value = OutString;
+            ea.cmdType = CmdType.exe;
             return ea;
         }
 
-        #region void 验证是否是数字
-        static bool IsInt(string str)
+        //CmdType.cmd  线程执行命令一般是exe文件或者c:\aa
+        public static void ExeExe(ExeAlias al)
         {
-            bool bl = false;
-            try
-            {
-                int i = int.Parse(str);
-            }
-            catch
-            {
-                bl = false;
-            }
-            return bl;
+            if (al.cmdType != CmdType.cmd) return;
+            var ParStart = new ParameterizedThreadStart(Cmd.Run);
+            Thread myThread = new Thread(ParStart);
+            myThread.Start(al.text);
         }
-        #endregion
-
-        static bool IsNumber(string oText)
+        //执行dos
+        public static void ExeProcessCmd(string CmdString)
         {
-            if (oText == null) return false;
-            oText.Trim();
-            string[] arr = oText.Replace(" ", ",").Split(',');
-            try
+            Process proc = new Process();
+            proc.StartInfo.FileName = "cmd.exe";
+            proc.StartInfo.Arguments = " /c " + CmdString;
+            proc.Start();
+        }
+        public static void ExeCmd(ExeAlias al)
+        {
+            switch (al.cmdType)
             {
-                foreach (string a in arr)
+                case CmdType.cmd: ExeExe(al); break;
+                case CmdType.kill: Cmd.Run(al.text); break;
+                case CmdType.exe:
+                    break;
+                case CmdType.Dos: ExeProcessCmd(al.text); break;
+                default: break;
+            }
+        }
+
+        public class Func
+        {
+            #region void 验证是否是数字
+            public bool IsInt(string str)
+            {
+                bool bl = false;
+                try
                 {
-                    if (a.Trim() != "" && a != null)
+                    int i = int.Parse(str);
+                }
+                catch
+                {
+                    bl = false;
+                }
+                return bl;
+            }
+            #endregion
+
+
+            public bool IsNumber(string oText)
+            {
+                if (oText == null) return false;
+                oText.Trim();
+                string[] arr = oText.Replace(" ", ",").Split(',');
+                try
+                {
+                    foreach (string a in arr)
                     {
-                        long var1 = Convert.ToInt64(a.Trim());
+                        if (a.Trim() != "" && a != null)
+                        {
+                            long var1 = Convert.ToInt64(a.Trim());
+                        }
+                    }
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            #region 取得进程的名称
+            public string GetCmdString(string alase, ComboBox comboBox1)
+            {
+                string str = "";
+                for (int i = 0; i < comboBox1.Items.Count; i++)
+                {
+                    ComboBoxItem cbi = (ComboBoxItem)comboBox1.Items[i];
+                    if (alase == cbi.Text)
+                    {
+                        str = cbi.Value.ToString();
+                        break;
                     }
                 }
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        #region 取得进程的名称
-        static string GetCmdString(string alase,ComboBox comboBox1)
-        {
-            string str = "";
-            for (int i = 0; i < comboBox1.Items.Count; i++)
-            {
-                ComboBoxItem cbi = (ComboBoxItem)comboBox1.Items[i];
-                if (alase == cbi.Text)
+                if (str.IndexOf(".exe") > 0)
                 {
-                    str = cbi.Value.ToString();
-                    break;
+                    str = System.IO.Path.GetFileName(str).Replace(".exe", "");
                 }
+                if (str == "") str = alase;
+                return str;
             }
-            if (str.IndexOf(".exe") > 0)
-            {
-                str = System.IO.Path.GetFileName(str).Replace(".exe", "");
-            }
-            if (str == "") str = alase;
-            return str;
+            #endregion
         }
-        #endregion 
     }
-
-
 }

@@ -329,7 +329,7 @@ namespace fasta2011
                             myThread.Start(exeUrl);                            
                             //Cmd.Run(exeUrl);
                             break;
-                        case CmdType.Dos:
+                        case CmdType.Dos:   //ping www.163.com
                             Cmd.Run(OutString);
                             break;
 
@@ -367,7 +367,7 @@ namespace fasta2011
                                 }
                                 else
                                 {
-                                    ExeProcess(HttpArr[i].ToString());
+                                    ExeProcess(HttpArr[i].ToString());  // 打开文件夹 和 exe 
                                 }
                             }
                             break;
@@ -567,8 +567,9 @@ namespace fasta2011
         {
             listcb = new List<ComboBoxItem>();
             AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();            
-            List<Alias> ls = db.AliasSet;            
-            ls.ForEach(p => acsc.Add(KongGeProcess(p.Name) + p.Path ));
+            List<Alias> ls = db.AliasSet;
+            ls.ForEach(p => acsc.Add(p.Name));
+            //ls.ForEach(p => acsc.Add(KongGeProcess(p.Name) + p.Path));
             ls.ForEach(p => listcb.Add(new ComboBoxItem { Text = p.Name,Value = p.Path  }));
             this.comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
