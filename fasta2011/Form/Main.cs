@@ -60,8 +60,8 @@ namespace fasta2011
         {
             if (IsFromDB) db.ReadData();
             List<Alias> ls = db.AliasSet;                      
-            comboBox1.Items.Clear();
-            ls.ForEach(p => comboBox1.Items.Add(new ComboBoxItem { Text = p.Name, Value = p.Path }));                         
+            comboBox1.Items.Clear();            
+            ls.ForEach(p => comboBox1.Items.Add(new ComboBoxItem { ID = p.ID, Text = p.Name, Value = p.Path, Type = p.Type  }));
         }
         #region Form1_Load
         private void Form1_Load(object sender, EventArgs e)
@@ -76,6 +76,7 @@ namespace fasta2011
             Handle1 = this.Handle;
             CreateSqliteDB();
             Suggest();
+            log.WriteLog(CmdType.cmd.ToString());
         }
         #endregion
 
@@ -281,107 +282,113 @@ namespace fasta2011
         #region 执行命令
         private void comboBox1_KeyDown(object sender, KeyEventArgs e)
         {
+            if (e.KeyCode != Keys.Enter) return;
+            var aa = (ComboBoxItem)comboBox1.SelectedItem;
+            Cmd.RunAlias(aa);
+            return;
+
+            //======旧代码================================================
             //1. 取出combox1的值，通过连续空格分割成数组，取出text和value
             //2. 通过值去判断使用exe http，还是别
             //3. 执行
-
-            string exeUrl = "";
-            string vlaue = "";
-            if (e.KeyValue == 13)
-            {
-                try
-                {
-                    exeUrl = comboBox1.Text;
-                    if (exeUrl.Trim() == "")return;
+            //string exeUrl = "";
+            //string vlaue = "";
+            //if (e.KeyValue == 13)
+            //{
+              
+            //    try
+            //    {
+            //        exeUrl = comboBox1.Text;
+            //        if (exeUrl.Trim() == "")return;
                     
 
 
-                    //******************  遍历aliase检测是否存在exe  ******************************
-                    //for (int i = 0; i < comboBox1.Items.Count; i++)
-                    for (int i = 0; i < listcb.Count; i++)
-                    {
+            //        //******************  遍历aliase检测是否存在exe  ******************************
+            //        //for (int i = 0; i < comboBox1.Items.Count; i++)
+            //        for (int i = 0; i < listcb.Count; i++)
+            //        {
 
-                        ComboBoxItem cbi = (ComboBoxItem)listcb[i];
+            //            ComboBoxItem cbi = (ComboBoxItem)listcb[i];
 
 
-                        if (exeUrl == cbi.Text)
-                        {
-                            vlaue = cbi.Value.ToString();
-                            ct = CmdType.exe;
-                            break;
-                        }
-                    }
+            //            if (exeUrl == cbi.Text)
+            //            {
+            //                vlaue = cbi.Value.ToString();
+            //                ct = CmdType.exe;
+            //                break;
+            //            }
+            //        }
 
-                    string OutString = vlaue;
-                    int analyse_i = analyse(exeUrl, ref OutString);
-                    //******************  输入的命令没有在aliase列表内   ******************************
+            //        string OutString = vlaue;
+            //        int analyse_i = analyse(exeUrl, ref OutString);
+            //        //******************  输入的命令没有在aliase列表内   ******************************
                     
-                        if (analyse_i == 1) ct = CmdType.kill;
-                        if (analyse_i == 2) ct = CmdType.cmd;
-                        if (analyse_i == 3) ct = CmdType.stock;                                           
-                        if (analyse_i == 4) ct = CmdType.Dos;
-                    switch (ct)
-                    {
-                        //**********  开始 运行 *********************
-                        case CmdType.cmd:
-                            ParameterizedThreadStart ParStart = new ParameterizedThreadStart(Cmd.Run);
-                            Thread myThread = new Thread(ParStart);
-                            myThread.Start(exeUrl);                            
-                            //Cmd.Run(exeUrl);
-                            break;
-                        case CmdType.Dos:   //ping www.163.com
-                            Cmd.Run(OutString);
-                            break;
+            //            if (analyse_i == 1) ct = CmdType.kill;
+            //            if (analyse_i == 2) ct = CmdType.cmd;
+            //            if (analyse_i == 3) ct = CmdType.stock;                                           
+            //            if (analyse_i == 4) ct = CmdType.Dos;
+            //        switch (ct)
+            //        {
+            //            //**********  开始 运行 *********************
+            //            case CmdType.cmd:
+            //                ParameterizedThreadStart ParStart = new ParameterizedThreadStart(Cmd.Run);
+            //                Thread myThread = new Thread(ParStart);
+            //                myThread.Start(exeUrl);                            
+            //                //Cmd.Run(exeUrl);
+            //                break;
+            //            case CmdType.Dos:   //ping www.163.com
+            //                Cmd.Run(OutString);
+            //                break;
 
-                        //**********  kill 掉进程  *********************
-                        case CmdType.kill:
-                            ExeProcessCmd(OutString);
-                            break;
+            //            //**********  kill 掉进程  *********************
+            //            case CmdType.kill:
+            //                ExeProcessCmd(OutString);
+            //                break;
 
-                        //**********  查看股票代码的网页  *********************
-                        case CmdType.stock:
-                            string[] StockArr = exeUrl.Replace(" ","").Split(',');
-                            for (int i = 0; i < StockArr.Length; i++)
-                            {
-                                if (IsNumber(StockArr[i].ToString().Trim()))
-                                {
-                                    string code = StockArr[i].Substring(0, 1) == "6" ? "sh" : "sz";
-                                    /*   搜狐网页        
-                                    ShellExecute(IntPtr.Zero, "open", @"http://q.stock.sohu.com/cn/" + StockArr[i].ToString() + "/index_kp.shtml#1", "", "", ShowCommands.SW_SHOWNOACTIVATE); // //System.Diagnostics.Process.Start(@"D:\绿色软件\TheWorld1.43\TheWorldFull\TheWorld.exe", HttpArr[i].ToString());                                            
-                                    ShellExecute(IntPtr.Zero, "open", @"http://biz.finance.sina.com.cn/suggest/lookup_n.php?q=" + StockArr[i].ToString() + "&country=stock", "", "", ShowCommands.SW_SHOWNOACTIVATE); // //System.Diagnostics.Process.Start(@"D:\绿色软件\TheWorld1.43\TheWorldFull\TheWorld.exe", HttpArr[i].ToString());                                               
-                                    */
-                                    ShellExecute(IntPtr.Zero, "open", string.Format(@"http://quote.eastmoney.com/{0}.html", code + StockArr[i]), "", "", ShowCommands.SW_SHOWNOACTIVATE); 
-                                }
-                            }
-                            break;
+            //            //**********  查看股票代码的网页  *********************
+            //            case CmdType.stock:
+            //                string[] StockArr = exeUrl.Replace(" ","").Split(',');
+            //                for (int i = 0; i < StockArr.Length; i++)
+            //                {
+            //                    if (IsNumber(StockArr[i].ToString().Trim()))
+            //                    {
+            //                        string code = StockArr[i].Substring(0, 1) == "6" ? "sh" : "sz";
+            //                        /*   搜狐网页        
+            //                        ShellExecute(IntPtr.Zero, "open", @"http://q.stock.sohu.com/cn/" + StockArr[i].ToString() + "/index_kp.shtml#1", "", "", ShowCommands.SW_SHOWNOACTIVATE); // //System.Diagnostics.Process.Start(@"D:\绿色软件\TheWorld1.43\TheWorldFull\TheWorld.exe", HttpArr[i].ToString());                                            
+            //                        ShellExecute(IntPtr.Zero, "open", @"http://biz.finance.sina.com.cn/suggest/lookup_n.php?q=" + StockArr[i].ToString() + "&country=stock", "", "", ShowCommands.SW_SHOWNOACTIVATE); // //System.Diagnostics.Process.Start(@"D:\绿色软件\TheWorld1.43\TheWorldFull\TheWorld.exe", HttpArr[i].ToString());                                               
+            //                        */
+            //                        ShellExecute(IntPtr.Zero, "open", string.Format(@"http://quote.eastmoney.com/{0}.html", code + StockArr[i]), "", "", ShowCommands.SW_SHOWNOACTIVATE); 
+            //                    }
+            //                }
+            //                break;
 
-                        //**********  alalise 命令 *********************
-                        case CmdType.exe:
+            //            //**********  alalise 命令 *********************
+            //            case CmdType.exe:
 
-                            string[] HttpArr = vlaue.Split(';');
-                            for (int i = 0; i < HttpArr.Length; i++)
-                            {
-                                if (HttpArr[i].IndexOf("://") >= 0)
-                                {
-                                    ShellExecute(IntPtr.Zero, "open", HttpArr[i].ToString(), "", "", ShowCommands.SW_SHOWNOACTIVATE); // //System.Diagnostics.Process.Start(@"D:\绿色软件\TheWorld1.43\TheWorldFull\TheWorld.exe", HttpArr[i].ToString());        
-                                }
-                                else
-                                {
-                                    ExeProcess(HttpArr[i].ToString());  // 打开文件夹 和 exe 
-                                }
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex + vlaue.ToString() + "  不存在", "消息内容", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    Logger.Trace(ex, false);
+            //                string[] HttpArr = vlaue.Split(';');
+            //                for (int i = 0; i < HttpArr.Length; i++)
+            //                {
+            //                    if (HttpArr[i].IndexOf("://") >= 0)
+            //                    {
+            //                        ShellExecute(IntPtr.Zero, "open", HttpArr[i].ToString(), "", "", ShowCommands.SW_SHOWNOACTIVATE); // //System.Diagnostics.Process.Start(@"D:\绿色软件\TheWorld1.43\TheWorldFull\TheWorld.exe", HttpArr[i].ToString());        
+            //                    }
+            //                    else
+            //                    {
+            //                        ExeProcess(HttpArr[i].ToString());  // 打开文件夹 和 exe 
+            //                    }
+            //                }
+            //                break;
+            //            default:
+            //                break;
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        MessageBox.Show(ex + vlaue.ToString() + "  不存在", "消息内容", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //        Logger.Trace(ex, false);
 
-                }
-            }
+            //    }
+            //}
         }
         #endregion 
 

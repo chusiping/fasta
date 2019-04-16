@@ -14,15 +14,20 @@ namespace fasta2011
         stock = 3,
         Dos = 4
     }
+
+    public enum AliasType
+    {
+        http,exe,dos,txt
+    }
     public class ComboBoxItem
     {
-        private string _text = null;
-        private object _value = null;
-        public string Text { get { return this._text; } set { this._text = value; } }
-        public object Value { get { return this._value; } set { this._value = value; } }
+        public int ID { get; set; }
+        public string Text { get; set; }
+        public object Value { get; set; }
+        public string Type { get; set; }
         public override string ToString()
         {
-            return this._text;
+            return this.Text;
         }
     }
     public class Alias

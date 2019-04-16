@@ -124,14 +124,21 @@ namespace fasta2011
             return ea;
         }
 
-        //CmdType.cmd  线程执行命令一般是exe文件或者c:\aa
-        public static void ExeExe(ExeAlias al)
-        {
-            if (al.cmdType != CmdType.cmd) return;
+        //打开文件和目录,wangye
+        public static void ExeExe(string al)
+        {            
             var ParStart = new ParameterizedThreadStart(Cmd.Run);
             Thread myThread = new Thread(ParStart);
-            myThread.Start(al.text);
+            myThread.Start(al);
         }
+        //打开文件和目录,wangye
+        public static void ExeProcess(string StarInfoFileName)
+        {
+            Process proc = new Process();
+            proc.StartInfo.FileName = StarInfoFileName;
+            proc.StartInfo.Arguments = " ";
+            proc.Start();
+        }        
         //执行dos
         public static void ExeProcessCmd(string CmdString)
         {
@@ -140,11 +147,38 @@ namespace fasta2011
             proc.StartInfo.Arguments = " /c " + CmdString;
             proc.Start();
         }
+
+        public static void RunAlias(ComboBoxItem cbi)
+        {
+            //comboBox1.SelectedItem 取出 后
+            //根据 type 选择处理的方式执行就好
+            AliasType AT = (new Cmd.Func()).GetAliasType(cbi.Type);
+            string s = cbi.Value.ToString();
+            string[] arr = s.Split(';');
+            switch (AT)
+            {
+                case AliasType.http:
+                    Array.ForEach(arr, item => ExeProcess(item));
+                    break;
+                case AliasType.exe:
+                    ExeExe(s);
+                    break;
+                case AliasType.dos:
+                    ExeProcessCmd(s.Replace("dos:",""));  //因为历史数据问题，所有要替换dos：成空
+                    break;
+                case AliasType.txt:
+                    //显示富文本
+                    break;
+                default:
+                    break;
+            }
+
+        }
         public static void ExeCmd(ExeAlias al)
         {
             switch (al.cmdType)
             {
-                case CmdType.cmd: ExeExe(al); break;
+                case CmdType.cmd: ExeExe(al.value); break;
                 case CmdType.kill: Cmd.Run(al.text); break;
                 case CmdType.exe:
                     break;
@@ -155,6 +189,16 @@ namespace fasta2011
 
         public class Func
         {
+            //获取枚举类型
+            public AliasType GetAliasType(string s)
+            {
+                AliasType AT = new AliasType();
+                foreach (AliasType hs1 in Enum.GetValues(typeof(AliasType)))
+                {
+                    if (hs1.ToString() == s) { AT = hs1; break; }
+                }
+                return AT;
+            }
             #region void 验证是否是数字
             public bool IsInt(string str)
             {
