@@ -137,7 +137,15 @@ namespace fasta2011
             Process proc = new Process();
             proc.StartInfo.FileName = StarInfoFileName;
             proc.StartInfo.Arguments = " ";
-            proc.Start();
+            try
+            {
+                proc.Start();
+            }
+            catch 
+            {
+                MessageBox.Show(StarInfoFileName + " 不存在！");                
+            }
+            
         }        
         //执行dos
         public static void ExeProcessCmd(string CmdString)

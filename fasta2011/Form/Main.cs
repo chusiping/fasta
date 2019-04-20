@@ -32,7 +32,7 @@ namespace fasta2011
         //定义变量,句柄类型
         public IntPtr Handle1;
         private DataBase db = new sqliteData(); private Alias _al;
-        LogMa log = new LogMa();
+        LogMa log = new LogMa();Cmd.Func fc = new Cmd.Func();
         #endregion 
 
         #region 获得版本号
@@ -66,26 +66,16 @@ namespace fasta2011
         #region Form1_Load
         private void Form1_Load(object sender, EventArgs e)
         {
-            //ReadXml(AppSetting.xmlPath1);
-            //ReadXml(AppSetting.xmlPath2);
-            //ReadXml(AppSetting.xmlPath3);
             LoadData();
             RegAdd();
             this.Text = GetAssemblyVersion();
             comboBox1.Focus();
-            Handle1 = this.Handle;
-            CreateSqliteDB();
+            Handle1 = this.Handle;            
             Suggest();
             log.WriteLog(CmdType.cmd.ToString());
         }
         #endregion
 
-        private void CreateSqliteDB()
-        {
-            var db = FastaContext.Instance;
-            //var al = new Alias { Name = "test", Path = "aaaaa", Type = "dos" };  //测试
-            //db.AliasSet.Add(al);db.SaveChanges(); //测试
-        }
 
         #region 重载最小化按钮
         const int WM_SYSCOMMAND = 0x112;
@@ -99,7 +89,7 @@ namespace fasta2011
                 if (m.WParam.ToInt32() == SC_MINIMIZE)
                 {
                     this.WindowState = FormWindowState.Normal;
-                    OpenForm("Form1");
+                    fc.Open_Form("Form1");
                     return;
                 }
                 if (m.WParam.ToInt32() == SC_CLOSE)
@@ -123,11 +113,11 @@ namespace fasta2011
                             break;
                         case 124:    //按下的是f1   
                             //此处填写快捷键响应代码                               
-                            OpenForm("Form1");
+                            fc.Open_Form("Form1"); //OpenForm("Form1");
                             break;
                         case 125:    //按下的是ctrl + f1   
                             //此处填写快捷键响应代码                               
-                            OpenForm("Form_JinCheng");
+                            fc.Open_Form("Form_JinCheng");
                             break;
 
                     }
@@ -173,112 +163,6 @@ namespace fasta2011
         }
         #endregion 
 
-        #region 读取data.xml
-        public void ReadXml(string path)
-        {
-
-            string s = "";
-            XmlDocument doc = new XmlDocument();
-
-            doc.Load(path);
-
-            XmlNodeReader reader = new XmlNodeReader(doc);
-
-            while (reader.Read())
-            {
-
-                switch (reader.NodeType)
-                {
-                    case XmlNodeType.Element:
-                        s = reader.Name;
-                        if (s.Equals(AppSetting.keyWord))
-                        {
-
-                            ComboBoxItem cbi1 = new ComboBoxItem();
-                            cbi1.Text = reader.GetAttribute(0);
-                            cbi1.Value = reader.GetAttribute(1);
-                            var al = new Alias { Name = reader.GetAttribute(0), Path = reader.GetAttribute(1), AddTime = DateTime.Now };
-                            db.AddItem(al);
-                            //comboBox1.Items.Add(cbi1);
-                        }
-                        break;
-
-                }
-            }
-
-            ReadXml2();
-        }
-        #endregion 
-
-        #region 读取html.xml
-        public void ReadXml2()
-        {
-
-            string s = "";
-            XmlDocument doc = new XmlDocument();
-
-            doc.Load(AppSetting.xmlPath2);
-
-            XmlNodeReader reader = new XmlNodeReader(doc);
-
-            while (reader.Read())
-            {
-
-                switch (reader.NodeType)
-                {
-                    case XmlNodeType.Element:
-                        s = reader.Name;
-                        if (s.Equals(AppSetting.keyWord))
-                        {
-
-                            ComboBoxItem cbi1 = new ComboBoxItem();
-                            cbi1.Text = reader.GetAttribute(0);
-                            cbi1.Value = reader.GetAttribute(1);
-                            comboBox1.Items.Add(cbi1);
-                        }
-                        break;
-
-                }
-            }
-            ReadXml3();
-        }
-        #endregion 
-
-        #region 读取autokey.xml
-        public void ReadXml3()
-        {
-
-            string s = "";
-            XmlDocument doc = new XmlDocument();
-
-            doc.Load(AppSetting.xmlPath3);
-
-            XmlNodeReader reader = new XmlNodeReader(doc);
-
-            while (reader.Read())
-            {
-
-                switch (reader.NodeType)
-                {
-                    case XmlNodeType.Element:
-                        s = reader.Name;
-                        if (s.Equals(AppSetting.keyWord))
-                        {
-
-                            ComboBoxItem cbi1 = new ComboBoxItem();
-                            cbi1.Text = reader.GetAttribute(0);
-                            cbi1.Value = reader.GetAttribute(1);
-                            comboBox1.Items.Add(cbi1);
-                        }
-                        break;
-
-                }
-            }
-
-
-        }
-        #endregion 
-
         #region 执行命令
         private void comboBox1_KeyDown(object sender, KeyEventArgs e)
         {
@@ -286,51 +170,6 @@ namespace fasta2011
             var aa = (ComboBoxItem)comboBox1.SelectedItem;
             Cmd.RunAlias(aa);
             return;
-        }
-        #endregion 
-
-        #region 验证是否是数字，中间用","隔开，例： 1001,1002,1003,并计算出其中的个数
-        /// <summary>
-        /// 验证是否是数字，中间用","隔开，例： 1001,1002,1003,并计算出其中的个数
-        /// </summary>
-        /// <param name="oText"></param>
-        /// <returns></returns>
-        public bool IsNumber(string oText)
-        {
-            if (oText == null) return false;
-            oText.Trim();
-            string[] arr = oText.Replace(" ",",").Split(',');
-            try
-            {
-                foreach (string a in arr)
-                {
-                    if (a.Trim() != "" && a != null)
-                    {
-                        long var1 = Convert.ToInt64(a.Trim());
-                    }
-                }
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-         # endregion
-
-        #region void 验证是否是数字
-        bool IsInt(string str)
-        {
-            bool bl = false;
-            try
-            {
-                int i = int.Parse(str);
-            }
-            catch
-            {
-                bl = false;
-            }
-            return bl;
         }
         #endregion 
 
@@ -342,7 +181,7 @@ namespace fasta2011
             if (stringIn.IndexOf("kill ") >= 0 || stringIn.IndexOf(" kill") >= 0 || stringIn.IndexOf(" k") >= 0)
             {
                 string NameOrID = stringIn.Replace("kill", ""); NameOrID = NameOrID.Replace("k", ""); NameOrID = NameOrID.Replace(" ", "");
-                if (IsInt(NameOrID))
+                if ((!string.IsNullOrEmpty(NameOrID)))
                 {
                     OutString = "ntsd -c q -p " + NameOrID;
                 }
@@ -356,10 +195,6 @@ namespace fasta2011
             {
                 OutString = OutString.Replace("dos:", "");
                 return 4;
-            }
-            else if (IsNumber(stringIn))
-            {
-                i = 3;  //是数字符串               
             }
             else if (OutString=="")
             {
@@ -404,52 +239,7 @@ namespace fasta2011
         }
         #endregion 
 
-        #region 独立调用Process
-        void ExeProcess(string StarInfoFileName)
-        {
-            Process proc = new Process();
-            proc.StartInfo.FileName = StarInfoFileName;
-            proc.StartInfo.Arguments = " ";
-            proc.Start();
-        }
-        #endregion 
 
-        #region 独立调用cmd
-        void ExeProcessCmd(string CmdString)
-        {
-            Process proc = new Process();
-            proc.StartInfo.FileName = "cmd.exe";
-            proc.StartInfo.Arguments = " /c " + CmdString;
-            proc.Start();
-        }
-        #endregion 
-
-        #region 添加智能提示的列表
-        private void ReadXml(XmlDocument doc1, string s, ref AutoCompleteStringCollection acsc, ref List<ComboBoxItem> listcb)
-        {
-            XmlNodeReader reader = new XmlNodeReader(doc1);
-            while (reader.Read())
-            {
-                //判断当前读取得节点类型
-                switch (reader.NodeType)
-                {
-                    case XmlNodeType.Element:
-                        s = reader.Name;
-                        if (s.Equals(AppSetting.keyWord))
-                        {
-                            ComboBoxItem cbi1 = new ComboBoxItem();
-                            cbi1.Text = reader.GetAttribute(0);
-                            cbi1.Value = reader.GetAttribute(1);
-                            listcb.Add(cbi1);
-                            acsc.Add(cbi1.Text);
-                        }
-                        break;
-
-                }
-            }
-            //return acsc;
-        }
-        #endregion 
 
         #region void 中文字符
         public bool IsChinese(string CString)
@@ -529,9 +319,6 @@ namespace fasta2011
             HotKey.RegisterHotKey(Handle, 123, AppSetting.key_Alt, AppSetting.key_Word);
             HotKey.RegisterHotKey(Handle, 124, 0, System.Windows.Forms.Keys.F1);
             HotKey.RegisterHotKey(Handle, 125, HotKey.KeyModifiers.Ctrl, Keys.F1);
-
-            //原写死 HotKey.RegisterHotKey(Handle, 123, HotKey.KeyModifiers.Alt, Keys.R);
-
         }
         #endregion 
 
@@ -550,52 +337,6 @@ namespace fasta2011
             //this.Hide();
             //this.Visible = false;
 #endif
-        }
-        #endregion
-
-        #region ShowEdit
-        private void OpenForm(string fmName,string ArgStr = "")
-        {
-            bool IsOpen = false;
-           
-            //fm1.Owner = this;
-           
-            foreach (Form f in Application.OpenForms)
-            {
-                if (f.Name == fmName)
-                {
-                    IsOpen = true;
-                    try
-                    {
-                        Application.OpenForms[fmName].Close();
-                    }
-                    catch { }
-                    break;
-                }
-            }
-            if (IsOpen == false)
-            {
-                if (fmName == "Form1")
-                {
-                    Form1 fm1 = new Form1();
-                    fm1.Show();
-                    fm1.Focus();
-                    fm1.TopMost = true;
-                    fm1.textBox1.Focus();
-                }
-                if (fmName == "Form_JinCheng")
-                {
-                    Form_JinCheng fm1 = new Form_JinCheng();
-                    fm1.Show();
-                    fm1.Focus();
-                }
-                if (fmName == "RichForm")
-                {
-                    RichForm fm1 = new RichForm(ArgStr);                    
-                    fm1.Show();
-                    fm1.Focus();
-                }
-            }
         }
         #endregion
 
@@ -658,55 +399,6 @@ namespace fasta2011
         }
         #endregion
         
-        #region 调用默认的浏览器
-        public enum ShowCommands : int
-        {
-            SW_HIDE = 0,
-            SW_SHOWNORMAL = 1,
-            SW_NORMAL = 1,
-            SW_SHOWMINIMIZED = 2,
-            SW_SHOWMAXIMIZED = 3,
-            SW_MAXIMIZE = 3,
-            SW_SHOWNOACTIVATE = 4,
-            SW_SHOW = 5,
-            SW_MINIMIZE = 6,
-            SW_SHOWMINNOACTIVE = 7,
-            SW_SHOWNA = 8,
-            SW_RESTORE = 9,
-            SW_SHOWDEFAULT = 10,
-            SW_FORCEMINIMIZE = 11,
-            SW_MAX = 11
-        }
-        [DllImport("shell32.dll")]
-        static extern IntPtr ShellExecute(
-        IntPtr hwnd,
-        string lpOperation,
-        string lpFile,
-        string lpParameters,
-        string lpDirectory,
-        ShowCommands nShowCmd);
-        #endregion
-
-        #region 监视键盘输入
-        private void Main_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Escape)
-            {
-                this.Hide();
-            }
-        }
-        #endregion
-
-        #region
-        private void comboBox1_TextChanged(object sender, EventArgs e)
-        {
-            if (comboBox1.Text == "kill?")
-            {
-                Cmd.Run("taskmgr");
-            }
-        }
-        #endregion
-
 
     }
 }
