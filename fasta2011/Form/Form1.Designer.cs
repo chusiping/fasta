@@ -65,13 +65,12 @@
             this.textBox1.Size = new System.Drawing.Size(984, 23);
             this.textBox1.TabIndex = 1;
             this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
-            this.textBox1.KeyUp += new System.Windows.Forms.KeyEventHandler(this.textBox1_KeyUp);
             // 
             // textBox2
             // 
-            this.textBox2.Location = new System.Drawing.Point(74, 85);
+            this.textBox2.Location = new System.Drawing.Point(54, 85);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(964, 23);
+            this.textBox2.Size = new System.Drawing.Size(984, 23);
             this.textBox2.TabIndex = 2;
             // 
             // button2
@@ -200,8 +199,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Fasta2011 v 2.8.6";
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
-            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Form1_KeyPress);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);           
             this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();

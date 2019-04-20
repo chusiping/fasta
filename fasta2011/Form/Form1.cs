@@ -44,17 +44,16 @@ namespace fasta2011
             this.listView1.HeaderStyle = ColumnHeaderStyle.Clickable;//对表头进行设置
             this.listView1.FullRowSelect = true;//是否可以选择行
 
-
-            //this.listView1.HotTracking = true;// 当选择此属性时则HoverSelection自动为true和Activation属性为oneClick
-            //this.listView1.HoverSelection = true;
-            //this.listView1.Activation = ItemActivation.Standard; //
-            //添加表头
-            int w0 = AppConfig.ConfigGetValue("ListView1_c1_Width") == "" ? 35 : int.Parse(AppConfig.ConfigGetValue("ListView1_c1_Width"));
-            int w1 = AppConfig.ConfigGetValue("ListView1_c1_Width") == "" ? 250 : int.Parse(AppConfig.ConfigGetValue("ListView1_c1_Width"));
-            int w2 = AppConfig.ConfigGetValue("ListView1_c2_Width") == "" ? 900 : int.Parse(AppConfig.ConfigGetValue("ListView1_c2_Width"));
-            this.listView1.Columns.Add("ID", w0);
-            this.listView1.Columns.Add("别名", w1);
-            this.listView1.Columns.Add("路径", w2);
+            this.listView1.Columns.Add("ID",   GetWidth("c1_w"));
+            this.listView1.Columns.Add("别名", GetWidth("c2_w"));
+            this.listView1.Columns.Add("路径", GetWidth("c3_w"));
+            this.listView1.Columns.Add("类型", GetWidth("c4_w"));
+        }
+        private int GetWidth(string ss)
+        {
+            string s = AppConfig.ConfigGetValue("app", ss);
+            int rt = string.IsNullOrEmpty(s) ? 35 : int.Parse(s);
+            return rt;
         }
         private void InitCheckListBox()
         {
@@ -66,9 +65,7 @@ namespace fasta2011
             checkedListBox1.Size = new System.Drawing.Size(800, 22);
             checkedListBox1.MultiColumn = true;
             checkedListBox1.Name = "checkedListBox1";            
-            checkedListBox1.CheckOnClick = true;
-            //checkedListBox1.SelectionMode = SelectionMode.One;
-            //checkedListBox1.SelectedIndexChanged += new EventHandler(SelectIndex);
+            checkedListBox1.CheckOnClick = true;            
             checkedListBox1.ItemCheck += new ItemCheckEventHandler(SelectIndex);
             this.Controls.Add(checkedListBox1);
         }
@@ -81,19 +78,22 @@ namespace fasta2011
             }
             e.NewValue = CheckState.Checked;//刷新
             ShowMaxRich();
-            //foreach (AliasType hs1 in Enum.GetValues(typeof(AliasType)))
-            //{
-            //    if (AliasType.txt == hs1  &&   hs1.ToString() == checkedListBox1.SelectedValue.ToString() )
-            //    {  }
-            //}
+        }
+        private void SetCheckListBoxValue(string v)
+        {
+            for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            {
+                var c = checkedListBox1.Items[i];
+                if (c.ToString() == v)
+                { checkedListBox1.SetItemChecked(i, true); checkedListBox1.SetSelected(i, true); }
+            }
         }
         //获取实体，准备增删改
         private void GetAlias(ActType act)
         {
-            string s1 = textBox1.Text.Trim();
+            string s1 = textBox1.Text.Trim(); var c = checkedListBox1.SelectedItem;
             string s2 = LineProcess();
-            string type = checkedListBox1.SelectedItem.ToString();
-            if (string.IsNullOrWhiteSpace(type)) { MessageBox.Show("选择类别！");return; }
+            string type = c == null ? AliasType.http.ToString() : c.ToString();
             ListViewItem p = new ListViewItem();
             p = ListItemIndex == -1 ? null : listView1.Items[ListItemIndex];  //鼠标点击时，已经得到行号
             switch (act)
@@ -109,15 +109,14 @@ namespace fasta2011
                     break;
                 default:
                     break;
-            }
-            ListItemIndex = -1;
+            }            
         }
         private void LoadDataToListView(bool IsFromDB = true)   //是否从库中加载
         {
             if(IsFromDB)db.ReadData();
             List<Alias> ls = db.AliasSet;                       // text1搜索的时候改为内存集合搜索，不用每次都找数据库
             listView1.Items.Clear();
-            ls.ForEach(p => this.listView1.Items.Add(new ListViewItem(new string[] {p.ID.ToString(), p.Name, p.Path })));
+            ls.ForEach(p => this.listView1.Items.Add(new ListViewItem(new string[] {p.ID.ToString(), p.Name, p.Path,p.Type })));
             textBox1.Clear(); textBox2.Clear();                 // 添加完后清空输入框
         }
         private void Form1_Load(object sender, EventArgs e)
@@ -132,7 +131,7 @@ namespace fasta2011
         private void Add_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textBox1.Text.Trim())) return;
-            GetAlias(ActType.Add);
+            ListItemIndex = -1;  GetAlias(ActType.Add);            
             int i = db.AddItem(_al);
             if (i == 2) { MessageBox.Show("此别名已存在！"); return; }
             if (i == 0) { MessageBox.Show("添加失败！"); return; }
@@ -140,6 +139,7 @@ namespace fasta2011
                 LoadDataToListView();                
                 RefrushOwner();
                 LineChange(false);
+                MaxRich(false);
             }
         }
          #region 点击修改按钮
@@ -152,47 +152,31 @@ namespace fasta2011
             button2.Visible = false;
             RefrushOwner();
             LineChange(false);
+            MaxRich(false);
         }
         #endregion 
 
-        int cbmSeleIndex = -1;
-        private void newComboxDropDown(object sender, EventArgs s)
-        {
-            if (textBox2.Visible == false)
-            {
-                foreach (var item in this.Controls)
-                {
-                    if (item is ComboBox)
-                    {
-                        ComboBox cb = (ComboBox)item;
-                        cbmSeleIndex = cb.SelectedIndex;
-                    }
-                }
-            }
-        }
-
-         #region 修改s1s2快捷键和值
+        #region 修改s1s2快捷键和值
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            ListViewItem p = new ListViewItem();
+            var p = new ListViewItem(); string ht = AliasType.txt.ToString();
             p = listView1.Items[ListItemIndex];
-
-            string s = p.SubItems[2].Text;
-
-            //string[] arr = p.SubItems[2].Text.Split(';');
-            //if (arr.Length > 1)
-            //{
-            //    s = s.Replace(";", "\r\n");
-            //    textBox2.Height = textBox2.Height * arr.Length;
-            //    LineChange();
-            //    button3.Visible = true;
-            //}
+            Alias al = new Alias { ID = int.Parse(p.SubItems[0].Text), Name = p.SubItems[1].Text, Path = p.SubItems[2].Text, Type = p.SubItems[3].Text };
+            SetCheckListBoxValue(al.Type);textBox1.Text = al.Name; 
+            if (al.Type == AliasType.txt.ToString())
+            {
+                MaxRich(true);
+                SetRichText(al.Path);  //TODO 富文本从数据库提取
+            }
+            else
+            {
+                textBox2.Text = al.Path;
+                MaxRich(false);
+                LineChange();
+            }
             button1.Visible = false;
             button2.Visible = true;
-            textBox1.Text = p.SubItems[1].Text;
-            //textBox2.Text = s;   
-            SetRichText(s);
-            RefrushOwner();                       
+            RefrushOwner();
         }
         #endregion 
 
@@ -200,8 +184,8 @@ namespace fasta2011
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
             GetAlias(ActType.Del);
-            db.DelItem(_al); 
-            LoadDataToListView();
+            db.DelItem(_al);
+            listView1.Items.RemoveAt(ListItemIndex); //LoadDataToListView(); TODO 删除后立即刷新或者不刷新
             RefrushOwner();           
         }
          #endregion
@@ -239,10 +223,6 @@ namespace fasta2011
             {
                 LineChange();
             }
-            if ((int)e.Modifiers == ((int)Keys.Control + (int)Keys.Shift) && e.KeyCode == Keys.Enter)
-            {
-                LineChange(false);
-            }
         }
         private void LineChange(bool IsMultiline = true)
         {
@@ -254,22 +234,6 @@ namespace fasta2011
         }
         #endregion 
 
-         #region 回车确认删除修改
-        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == (char)13)
-            {
-                if (button1.Visible == true)
-                {
-                    Add_Click(null, null);  //Add();
-                }
-                else
-                {
-                    LineChange();                   
-                }
-            }
-        }
-        #endregion 
 
          #region 双击选中进行修改
         private void listView1_DoubleClick(object sender, EventArgs e)
@@ -280,67 +244,11 @@ namespace fasta2011
         }
         #endregion 
 
-        bool CountTime(int star,int _long)
-        {
-            int dt2 = int.Parse(DateTime.Now.ToString("HHssmmfff"));
-            if ((dt2 - star) > _long) { return true; }
-            return false;
-        }
-
          #region 别名快速搜索
-        int s = 0;
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             timer1.Stop();timer1.Start(); string sc = textBox1.Text.Trim().ToLower();
             if (string.IsNullOrWhiteSpace(sc)) {  LoadDataToListView(false); return; }
-            //string sc = textBox1.Text.Trim().ToLower();
-            //if (string.IsNullOrWhiteSpace(sc)) { s = 0; return; }
-            //if (sc.Length > 0 ) s = int.Parse(DateTime.Now.ToString("HHssmmfff"));
-            //else
-            //{
-
-            //}
-            //if (CountTime(s, 1000))
-            //    Console.WriteLine(textBox1.Text);//log.WriteLog(textBox1.Text);
-
-
-            //TODO  把这个条件分离出来，解耦到最低
-            //if (button1.Visible == true)
-            //{
-            //    string sc = textBox1.Text.Trim().ToLower();
-            //    if (string.IsNullOrWhiteSpace(sc)) { s = 0; LoadDataToListView(false); }
-
-
-            //    if ( (sc == ""|| sc.Length < 2 ))
-            //    {
-
-            //        if (sc.Length < 2) s = int.Parse(DateTime.Now.ToString("HHssmmfff"));
-            //        return;
-            //    }
-            //    if (s != 0)
-            //    {
-            //        int dt2 = int.Parse(DateTime.Now.ToString("HHssmmfff"));
-            //        int i2 = (dt2 - s);
-            //        s = int.Parse(DateTime.Now.ToString("HHssmmfff"));
-            //    }
-
-            //    foreach (var item in listView1.Items)
-            //    {
-            //        ListViewItem lv = (ListViewItem)item;
-            //        if (lv.Text.Contains(sc)|| lv.SubItems[1].Text.Contains(sc))
-            //        {
-            //            //SetXmlFilePath(lv.Text, lv.SubItems[1].Text);  //等待改进
-            //            //int w= AppConfig.ConfigGetValue("ListView1_c2_max") == "" ? 250 : int.Parse(AppConfig.ConfigGetValue("ListView1_c2_max"));
-            //            //if(Xmlalias.XmlFilePath == AppSetting.xmlName3) this.listView1.Columns[0].Width = w; // 如果是对autohotkey的字段搜索，则拓宽
-            //            lv.ForeColor = Color.Red;                        
-            //            listView1.TopItem = listView1.Items[lv.Index];
-            //        }
-            //        else
-            //        {                        
-            //            listView1.Items.Remove(lv);
-            //        }                    
-            //    }
-            //}            
         }
         #endregion
 
@@ -356,18 +264,16 @@ namespace fasta2011
             }
         }
         #endregion 
-
+        //http多行处理
         private string LineProcess()
         {
-            string s =  GetRichText();
-            if(checkedListBox1.SelectedItem.ToString() == AliasType.http.ToString()) s = s.Replace("\r\n", ";");
-            return s;
-
-
-            //if (textBox2.Multiline == false) return textBox2.Text.Trim();
-            //string s = textBox2.Text.Trim();
+            string s = ""; var c = checkedListBox1.SelectedItem;
+            if (c!=null && c.ToString() == AliasType.txt.ToString())
+                s = GetRichText();
+            else
+                s = textBox2.Text.Trim();            
             //s = s.Replace("\r\n", ";");
-            //return s;
+            return s;
         }
         //取消多行
         private void button3_Click(object sender, EventArgs e)
@@ -376,12 +282,14 @@ namespace fasta2011
             button3.Visible = false;
             button2.Visible = false;
             button1.Visible = true;
-            LoadDataToListView(false);
+            //LoadDataToListView(false);
+            MaxRich(false);
         }
         private void GetRichTextControl()
         {
             this.webBrowser1.Url = new System.Uri(Application.StartupPath + "\\kindeditor\\WinForm.html", System.UriKind.Absolute);
             this.webBrowser1.ObjectForScripting = this; webBrowser1.ScriptErrorsSuppressed = true; //禁用错误脚本提示              
+            webBrowser1.Visible = false;
         }
         enum RichType { Text,Html }
         string GetRichText()
@@ -395,39 +303,33 @@ namespace fasta2011
         {
             this.webBrowser1.Document.InvokeScript("setContent", new object[] { WebUtility.HtmlDecode(s) });
         }
-        void ShowRichText()
-        {
-            ////默认显示textbox2 web1
-            // 判断是txt还是rich
-            // 如果是txt，则web1隐藏
-            // 如果是rich，并且text隐藏 是编辑 则web1 显示，web2 隐藏
-        }
         void MaxRich(bool ShowMax)
         {
             listView1.Visible = !ShowMax;
-            if (ShowMax) webBrowser1.Height = 600;
+            if (ShowMax) { webBrowser1.Visible = true; webBrowser1.Height = 600; }
             else
-                webBrowser1.Height = 60;
+            {
+                webBrowser1.Visible = false; //webBrowser1.Height = 60;
+                textBox2.Multiline = false;
+            }
         }
+        //是否显示富文本框
         void ShowMaxRich()
         {
-            string s = checkedListBox1.SelectedItem.ToString();
-            if (s == AliasType.http.ToString() || s == AliasType.txt.ToString()) MaxRich(true);
+            var c = checkedListBox1.SelectedItem; if (c == null) return;            
+            if (c.ToString() == AliasType.txt.ToString()) MaxRich(true);
             else
                 MaxRich(false);
         }
 
-        private void textBox1_KeyUp(object sender, KeyEventArgs e)
-        {
-            
-        }
-
+        //延时触发搜索
         private void timer1_Tick(object sender, EventArgs e)
         {
             string sc = textBox1.Text.Trim().ToLower();
             if (sc.Length > 1 && sc.Length < 8 )
-            { Console.WriteLine("seek..." + sc); Seek(sc); timer1.Stop(); }
+            { Seek(sc); timer1.Stop(); }
         }
+        //模糊搜索
         private void Seek(string keyString)
         {
             if (button1.Visible == true)

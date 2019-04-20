@@ -83,6 +83,7 @@ namespace fasta2011
         FastaContext db = FastaContext.Instance;
         public override void ReadData()
         {
+            //ToDo 富文本体较大，不使用循环载入
             AliasSet = db.AliasSet.Where(m => true).ToList();
         }
         public override int AddItem(Alias al)
@@ -96,7 +97,7 @@ namespace fasta2011
         public override void EditItem(Alias al, Alias NewAl)
         {            
             var aal = db.AliasSet.Find(al.ID);
-            aal.Name = NewAl.Name; aal.Path = NewAl.Path;        
+            aal.Name = NewAl.Name; aal.Path = NewAl.Path; aal.Type = NewAl.Type;        
             db.SaveChanges();   
         }
         public override void DelItem(Alias al)
