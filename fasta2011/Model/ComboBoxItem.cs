@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Drawing;
 using System.Text;
+using System.Windows.Forms;
 
 namespace fasta2011
 {
@@ -44,5 +46,23 @@ namespace fasta2011
         public string text { get; set; }
         public string value { get; set; }        
         public CmdType cmdType { get; set; }
+    }
+    class ColorCodedCheckedListBox : CheckedListBox
+    {
+        //Color.Orange为颜色，你可修改
+        protected override void OnDrawItem(DrawItemEventArgs e)
+        {
+            DrawItemEventArgs e2 = new DrawItemEventArgs
+                (e.Graphics, 
+                e.Font, 
+                new Rectangle(e.Bounds.Location, e.Bounds.Size), 
+                e.Index, 
+                (e.State & DrawItemState.Focus) == DrawItemState.Focus ? DrawItemState.Focus : DrawItemState.None, 
+                Color.Black, 
+                this.BackColor
+                //this.CheckedIndices.Contains(e.Index) ? Color.Red : SystemColors.Window
+                );
+            base.OnDrawItem(e2);
+        }
     }
 }

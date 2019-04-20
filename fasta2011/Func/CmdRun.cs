@@ -132,7 +132,7 @@ namespace fasta2011
             myThread.Start(al);
         }
         //打开文件和目录,wangye
-        public static void ExeProcess(string StarInfoFileName)
+        public static void ProcessStar(string StarInfoFileName)
         {
             Process proc = new Process();
             proc.StartInfo.FileName = StarInfoFileName;
@@ -158,10 +158,10 @@ namespace fasta2011
             switch (AT)
             {
                 case AliasType.http:
-                    Array.ForEach(arr, item => ExeProcess(item));
+                    Array.ForEach(arr, item => ProcessStar(item));
                     break;
                 case AliasType.exe:
-                    ExeExe(s);
+                    ProcessStar(s);  // ExeExe(s);
                     break;
                 case AliasType.dos:
                     ExeProcessCmd(s.Replace("dos:",""));  //因为历史数据问题，所有要替换dos：成空
