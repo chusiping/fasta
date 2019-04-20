@@ -99,7 +99,7 @@ namespace fasta2011
                 if (m.WParam.ToInt32() == SC_MINIMIZE)
                 {
                     this.WindowState = FormWindowState.Normal;
-                    ShowEdit("Form1");
+                    OpenForm("Form1");
                     return;
                 }
                 if (m.WParam.ToInt32() == SC_CLOSE)
@@ -123,11 +123,11 @@ namespace fasta2011
                             break;
                         case 124:    //按下的是f1   
                             //此处填写快捷键响应代码                               
-                            ShowEdit("Form1");
+                            OpenForm("Form1");
                             break;
                         case 125:    //按下的是ctrl + f1   
                             //此处填写快捷键响应代码                               
-                            ShowEdit("Form_JinCheng");
+                            OpenForm("Form_JinCheng");
                             break;
 
                     }
@@ -286,109 +286,6 @@ namespace fasta2011
             var aa = (ComboBoxItem)comboBox1.SelectedItem;
             Cmd.RunAlias(aa);
             return;
-
-            //======旧代码================================================
-            //1. 取出combox1的值，通过连续空格分割成数组，取出text和value
-            //2. 通过值去判断使用exe http，还是别
-            //3. 执行
-            //string exeUrl = "";
-            //string vlaue = "";
-            //if (e.KeyValue == 13)
-            //{
-              
-            //    try
-            //    {
-            //        exeUrl = comboBox1.Text;
-            //        if (exeUrl.Trim() == "")return;
-                    
-
-
-            //        //******************  遍历aliase检测是否存在exe  ******************************
-            //        //for (int i = 0; i < comboBox1.Items.Count; i++)
-            //        for (int i = 0; i < listcb.Count; i++)
-            //        {
-
-            //            ComboBoxItem cbi = (ComboBoxItem)listcb[i];
-
-
-            //            if (exeUrl == cbi.Text)
-            //            {
-            //                vlaue = cbi.Value.ToString();
-            //                ct = CmdType.exe;
-            //                break;
-            //            }
-            //        }
-
-            //        string OutString = vlaue;
-            //        int analyse_i = analyse(exeUrl, ref OutString);
-            //        //******************  输入的命令没有在aliase列表内   ******************************
-                    
-            //            if (analyse_i == 1) ct = CmdType.kill;
-            //            if (analyse_i == 2) ct = CmdType.cmd;
-            //            if (analyse_i == 3) ct = CmdType.stock;                                           
-            //            if (analyse_i == 4) ct = CmdType.Dos;
-            //        switch (ct)
-            //        {
-            //            //**********  开始 运行 *********************
-            //            case CmdType.cmd:
-            //                ParameterizedThreadStart ParStart = new ParameterizedThreadStart(Cmd.Run);
-            //                Thread myThread = new Thread(ParStart);
-            //                myThread.Start(exeUrl);                            
-            //                //Cmd.Run(exeUrl);
-            //                break;
-            //            case CmdType.Dos:   //ping www.163.com
-            //                Cmd.Run(OutString);
-            //                break;
-
-            //            //**********  kill 掉进程  *********************
-            //            case CmdType.kill:
-            //                ExeProcessCmd(OutString);
-            //                break;
-
-            //            //**********  查看股票代码的网页  *********************
-            //            case CmdType.stock:
-            //                string[] StockArr = exeUrl.Replace(" ","").Split(',');
-            //                for (int i = 0; i < StockArr.Length; i++)
-            //                {
-            //                    if (IsNumber(StockArr[i].ToString().Trim()))
-            //                    {
-            //                        string code = StockArr[i].Substring(0, 1) == "6" ? "sh" : "sz";
-            //                        /*   搜狐网页        
-            //                        ShellExecute(IntPtr.Zero, "open", @"http://q.stock.sohu.com/cn/" + StockArr[i].ToString() + "/index_kp.shtml#1", "", "", ShowCommands.SW_SHOWNOACTIVATE); // //System.Diagnostics.Process.Start(@"D:\绿色软件\TheWorld1.43\TheWorldFull\TheWorld.exe", HttpArr[i].ToString());                                            
-            //                        ShellExecute(IntPtr.Zero, "open", @"http://biz.finance.sina.com.cn/suggest/lookup_n.php?q=" + StockArr[i].ToString() + "&country=stock", "", "", ShowCommands.SW_SHOWNOACTIVATE); // //System.Diagnostics.Process.Start(@"D:\绿色软件\TheWorld1.43\TheWorldFull\TheWorld.exe", HttpArr[i].ToString());                                               
-            //                        */
-            //                        ShellExecute(IntPtr.Zero, "open", string.Format(@"http://quote.eastmoney.com/{0}.html", code + StockArr[i]), "", "", ShowCommands.SW_SHOWNOACTIVATE); 
-            //                    }
-            //                }
-            //                break;
-
-            //            //**********  alalise 命令 *********************
-            //            case CmdType.exe:
-
-            //                string[] HttpArr = vlaue.Split(';');
-            //                for (int i = 0; i < HttpArr.Length; i++)
-            //                {
-            //                    if (HttpArr[i].IndexOf("://") >= 0)
-            //                    {
-            //                        ShellExecute(IntPtr.Zero, "open", HttpArr[i].ToString(), "", "", ShowCommands.SW_SHOWNOACTIVATE); // //System.Diagnostics.Process.Start(@"D:\绿色软件\TheWorld1.43\TheWorldFull\TheWorld.exe", HttpArr[i].ToString());        
-            //                    }
-            //                    else
-            //                    {
-            //                        ExeProcess(HttpArr[i].ToString());  // 打开文件夹 和 exe 
-            //                    }
-            //                }
-            //                break;
-            //            default:
-            //                break;
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        MessageBox.Show(ex + vlaue.ToString() + "  不存在", "消息内容", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            //        Logger.Trace(ex, false);
-
-            //    }
-            //}
         }
         #endregion 
 
@@ -657,7 +554,7 @@ namespace fasta2011
         #endregion
 
         #region ShowEdit
-        private void ShowEdit(string fmName)
+        private void OpenForm(string fmName,string ArgStr = "")
         {
             bool IsOpen = false;
            
@@ -691,8 +588,14 @@ namespace fasta2011
                     Form_JinCheng fm1 = new Form_JinCheng();
                     fm1.Show();
                     fm1.Focus();
-                }    
-            }           
+                }
+                if (fmName == "RichForm")
+                {
+                    RichForm fm1 = new RichForm(ArgStr);                    
+                    fm1.Show();
+                    fm1.Focus();
+                }
+            }
         }
         #endregion
 

@@ -151,11 +151,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Form\test.cs">
+    <Compile Include="Form\RichTextShow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form\test.Designer.cs">
-      <DependentUpon>test.cs</DependentUpon>
+    <Compile Include="Form\RichTextShow.Designer.cs">
+      <DependentUpon>RichTextShow.cs</DependentUpon>
     </Compile>
     <Compile Include="Func\序列化.cs" />
     <Compile Include="Form\进程列表.cs">
@@ -174,8 +174,8 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form\test.resx">
-      <DependentUpon>test.cs</DependentUpon>
+    <EmbeddedResource Include="Form\RichTextShow.resx">
+      <DependentUpon>RichTextShow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form\进程列表.resx">
       <DependentUpon>进程列表.cs</DependentUpon>

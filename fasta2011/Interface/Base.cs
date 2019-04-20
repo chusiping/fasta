@@ -85,6 +85,24 @@ namespace fasta2011
         {
             //ToDo 富文本体较大，不使用循环载入
             AliasSet = db.AliasSet.Where(m => true).ToList();
+
+            //ToDo 富文本体较大，不使用循环载入
+            string s = AliasType.txt.ToString();
+            //List<Alias> a = db.AliasSet.Where(m => m.Type != s).ToList();
+            //var Alias = db.Database.SqlQuery<Alias>("SELECT ID,Name,Type  FROM [Aliases] where Type = '"+ s +"'");
+            //var lb = db.AlasSet.Where(m => m.Type == s).Select(s2 => new { s2.ID, s2.Name,s2.Type }).SingleOrDefault();
+            //List<Alias> lb;
+            //lb = (from u in db.AliasSet
+            //           where u.Type == "txt").Select(n=>new Alias { ID = u.ID })).ToList();
+            //AliasSet = la.Union(list.ToList()).ToList<Alias>();  
+
+            //var va= db.AliasSet.Select(s2 => new { s2.Name,s2.ID,s2.Type }).Where(m=>m.Type == s);
+            //foreach (var item in va)
+            //{
+            //    Alias al = new Alias { ID = item.ID, Name = item.Name, Type = item.Type };
+            //    AliasSet.Add(al);
+            //    Console.WriteLine(item.ID + item.Name);
+            //}       
         }
         public override int AddItem(Alias al)
         {
