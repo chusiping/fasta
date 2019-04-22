@@ -22,8 +22,7 @@ namespace fasta2011
     {
         #region 定义变量 委托
         private delegate void DG_ReadXml(XmlDocument doc1, string s, ref AutoCompleteStringCollection acsc, ref List<ComboBoxItem> listcb);
-        List<ComboBoxItem> listcb = null;
-        CmdType ct = new CmdType();
+        List<ComboBoxItem> listcb = null;        
         private bool windowCreate = false;
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, ExactSpelling = true)]
         public static extern IntPtr GetForegroundWindow(); //获得本窗体的句柄
@@ -51,8 +50,7 @@ namespace fasta2011
         //******************  初始化  ******************************
         public Main()
         {
-            InitializeComponent();
-            //Suggest();
+            InitializeComponent();            
         }
         #endregion
 
@@ -71,8 +69,7 @@ namespace fasta2011
             this.Text = GetAssemblyVersion();
             comboBox1.Focus();
             Handle1 = this.Handle;            
-            Suggest();
-            log.WriteLog(CmdType.cmd.ToString());
+            Suggest();            
         }
         #endregion
 
@@ -166,152 +163,75 @@ namespace fasta2011
         #region 执行命令
         private void comboBox1_KeyDown(object sender, KeyEventArgs e)
         {
+            RunAlias(e);
+        }
+        void DeleteItem()
+        {
+            Alias al = GetAlias();
+            if (al != null)
+            {
+                db.DelItem(al);
+                LoadData(true);
+                Suggest();
+            }
+        }
+        Alias GetAlias()
+        {
+            string s = comboBox1.Text.ToString();
+            s = s.Replace("--d","").Trim();
+            foreach (Alias item in db.AliasSet)
+            {
+                if (s == item.Name) return item;
+            }
+            return null;
+        }
+        int IsExtraProcess()
+        {
+            string s = comboBox1.Text.ToString().Trim();
+            if (s.Contains("--d")) return 1;
+            return 0;
+        }
+        void RunAlias(KeyEventArgs e)
+        {
             if (e.KeyCode != Keys.Enter) return;
             var aa = (ComboBoxItem)comboBox1.SelectedItem;
-            Cmd.RunAlias(aa);
-            return;
-        }
-        #endregion 
-
-        #region 判断输入字符类型
-        int analyse(string stringIn, ref string OutString)
-        {
-            int i = 0;
-
-            if (stringIn.IndexOf("kill ") >= 0 || stringIn.IndexOf(" kill") >= 0 || stringIn.IndexOf(" k") >= 0)
+            int rt = IsExtraProcess();
+            if ( rt > 0)
             {
-                string NameOrID = stringIn.Replace("kill", ""); NameOrID = NameOrID.Replace("k", ""); NameOrID = NameOrID.Replace(" ", "");
-                if ((!string.IsNullOrEmpty(NameOrID)))
+                switch (rt)
                 {
-                    OutString = "ntsd -c q -p " + NameOrID;
-                }
-                else
-                {
-                    OutString = string.Format("tskill \"{0}\"", GetCmdString(NameOrID.Trim()));
-                }
-                i = 1;      //kill 结束进程命令
-            }
-            else if (OutString.IndexOf("dos:") >= 0)
-            {
-                OutString = OutString.Replace("dos:", "");
-                return 4;
-            }
-            else if (OutString=="")
-            {
-                i = 2;      //cmd命令
-            }
-
-            return i;
-
-        }
-        #endregion 
-
-        #region 取得进程的名称
-        string GetCmdString(string alase)
-        {
-            string str = "";
-            for (int i = 0; i < comboBox1.Items.Count; i++)
-            {
-                ComboBoxItem cbi = (ComboBoxItem)comboBox1.Items[i];
-                if (alase == cbi.Text)
-                {
-                    str = cbi.Value.ToString();
-                    break;
+                    case 1:
+                        DeleteItem();
+                        break;
+                    default:
+                        break;
                 }
             }
-            if (str.IndexOf(".exe") > 0)
+            else
             {
-                str = System.IO.Path.GetFileName(str).Replace(".exe", "");
+                Cmd.RunAlias(aa);                
             }
-            if (str == "") str = alase;
-            return str;
         }
         #endregion 
-
-        #region 定义枚举
-        public enum CmdType
-        {
-            cmd = 0,
-            kill = 1,
-            exe = 2,
-            stock = 3,
-            Dos = 4
-        }
-        #endregion 
-
-
-
         #region void 中文字符
         public bool IsChinese(string CString)
         {
             return Regex.IsMatch(CString, @"^[\u4e00-\u9fa5]+$");
         }
         #endregion 
-        private string KongGeProcess(string s)
-        {
-            string ss = s;
-            while(ss.Length < 60)
-            {
-                ss += " ";
-            }
-            return ss;
-        }
         #region 自动匹配下拉
         public void Suggest()
         {
             listcb = new List<ComboBoxItem>();
             AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();            
             List<Alias> ls = db.AliasSet;
-            ls.ForEach(p => acsc.Add(p.Name));
-            //ls.ForEach(p => acsc.Add(KongGeProcess(p.Name) + p.Path));
+            ls.ForEach(p => acsc.Add(p.Name));            
             ls.ForEach(p => listcb.Add(new ComboBoxItem { Text = p.Name,Value = p.Path  }));
             this.comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-            this.comboBox1.AutoCompleteCustomSource = acsc;            
-
-            #region 新增加的模糊匹配方案，试行中
-            this.comboBox1.TextUpdate += (a, b) =>
-            {
-                //this.comboBox1.Items.AddRange(listcb.ToArray();
-                var input = this.comboBox1.Text.ToUpper();
-                var _Fist = string.IsNullOrEmpty(input) ? "" : input.Substring(0, 1);
-                if (IsChinese(_Fist))
-                {
-                    
-                    if (string.IsNullOrEmpty(input)) this.comboBox1.Items.AddRange(listcb.ToArray());
-                    else
-                    {
-                        this.comboBox1.Items.Clear();
-                        //var newList = new List<string>();
-                        var newList = new List<ComboBoxItem>();
-                        //data.Where(x => x.IndexOf(input, StringComparison.CurrentCultureIgnoreCase) != -1).ToArray();
-                        foreach (var x in listcb)
-                        {
-                            //if (x.Text.IndexOf(input, StringComparison.CurrentCultureIgnoreCase) != -1)
-                            if (x.Text.Contains(input))
-                            {
-                                newList.Add(x);
-                                Console.WriteLine("x:" + x.Text);
-                                Console.WriteLine("input:" + input);
-                            }
-                        }
-                        if (newList.Count > 0)
-                            this.comboBox1.Items.AddRange(newList.ToArray());
-                        else
-                            this.comboBox1.Items.AddRange(listcb.ToArray());
-
-                    }
-                    this.comboBox1.Select(this.comboBox1.Text.Length, 0);
-                    this.comboBox1.DroppedDown = true;
-                    Cursor = Cursors.Default;
-
-                }
-            };
-              #endregion
+            this.comboBox1.AutoCompleteCustomSource = acsc;
         }
         #endregion 
-
-        
 
         #region  注册热键
         private void Form1_Activated(object sender, EventArgs e)
@@ -397,9 +317,74 @@ namespace fasta2011
 
             }
         }
-        #endregion
-        
 
+        #endregion
+
+
+        private void toolTip1_Popup(object sender, PopupEventArgs e)
+        {            
+            e.ToolTipSize = new Size(800,50);
+        }
+        bool IsMatchText(string input ,string vlaue)
+        {
+            var _Fist = string.IsNullOrEmpty(input) ? "" : input.Substring(0, 1);
+            if (IsChinese(_Fist))
+            {
+                if (vlaue.Contains(input)) return true;
+            }
+            else
+            {
+                if (vlaue.Substring(0, input.Length) == input) return true;
+            }
+            return false;
+        }
+        private void comboBox1_TextUpdate(object sender, EventArgs e)
+        {
+            var input = this.comboBox1.Text.ToUpper();
+            var _Fist = string.IsNullOrEmpty(input) ? "" : input.Substring(0, 1);
+            if (IsChinese(input))
+            {
+
+                if (string.IsNullOrEmpty(input)) this.comboBox1.Items.AddRange(listcb.ToArray());
+                else
+                {
+                    this.comboBox1.Items.Clear();
+                    //var newList = new List<string>();
+                    var newList = new List<ComboBoxItem>();
+                    //data.Where(x => x.IndexOf(input, StringComparison.CurrentCultureIgnoreCase) != -1).ToArray();
+                    foreach (var x in listcb)
+                    {
+                        if (x.Text.Contains(input))
+                        {
+                            newList.Add(x);
+                        }
+                    }
+                    if (newList.Count > 0)
+                        this.comboBox1.Items.AddRange(newList.ToArray());
+                    else
+                        this.comboBox1.Items.AddRange(listcb.ToArray());
+
+                }
+                //this.comboBox1.Select(this.comboBox1.Text.Length, 0);
+                comboBox1.SelectionStart = comboBox1.Text.Length;
+                this.comboBox1.DroppedDown = true;
+                Cursor = Cursors.Default;
+
+            }
+        }
+        //tooltip提示快捷指向
+        private void comboBox1_TextChanged(object sender, EventArgs e)
+        {            
+            string s = comboBox1.Text.Trim();
+            foreach (var c in db.AliasSet)
+            {
+                if (c.Type != AliasType.txt.ToString() && s == c.Name )
+                {
+                    comboBox1.ShowTooltip(toolTip1, c.Path,8000);                    
+                    break;
+                }
+            }
+        }
     }
 }
 /*  修改日志

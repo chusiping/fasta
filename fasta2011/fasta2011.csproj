@@ -118,6 +118,10 @@
     <Compile Include="Interface\Interface.cs" />
     <Compile Include="Config\AppSetting.cs" />
     <Compile Include="Func\CmdRun.cs" />
+    <Compile Include="Model\ToolTipEx_消息提示扩展控件.cs" />
+    <Compile Include="Model\ComboBoxEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Model\ComboBoxItem.cs" />
     <Compile Include="sqlite\sqliteData.cs" />
     <Compile Include="Func\debugModel.cs" />
