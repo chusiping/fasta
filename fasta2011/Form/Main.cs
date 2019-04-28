@@ -254,8 +254,8 @@ namespace fasta2011
         private void Form1_Deactivate(object sender, EventArgs e)
         {
 #if !DEBUG
-            //this.Hide();
-            //this.Visible = false;
+            this.Hide();
+            this.Visible = false;
 #endif
         }
         #endregion

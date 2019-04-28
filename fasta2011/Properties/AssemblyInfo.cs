@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // 有关程序集的常规信息通过下列属性集
 // 控制。更改这些属性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("Fasta-Pro v1.8.5.28")]
+[assembly: AssemblyTitle("Fasta-Pro v1.9.4.23")]
 [assembly: AssemblyDescription("Copyright ©  2018.5")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
