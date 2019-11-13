@@ -98,7 +98,7 @@ namespace fasta2011
             /************************************ 响应热键 按快捷键**********************************/
             const int WM_HOTKEY = 0x0312;
             //Console.WriteLine("m.Msg : " + m.Msg);
-            if (m.Msg == null || m.WParam == null) return;
+            if (m.WParam == null) return;
             switch (m.Msg)
             {
                 case WM_HOTKEY:
