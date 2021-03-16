@@ -61,8 +61,8 @@ namespace fasta2011
             {
                 checkedListBox1.Items.Add(hs1.ToString());
             }
-            checkedListBox1.Location = new System.Drawing.Point(55, 15);
-            checkedListBox1.Size = new System.Drawing.Size(800, 22);
+            checkedListBox1.Location = new System.Drawing.Point(62, 20);
+            checkedListBox1.Size = new System.Drawing.Size(800, 30);
             checkedListBox1.MultiColumn = true;
             checkedListBox1.Name = "checkedListBox1";            
             checkedListBox1.CheckOnClick = true;            
