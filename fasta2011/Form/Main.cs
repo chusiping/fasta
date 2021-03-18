@@ -279,9 +279,8 @@ namespace fasta2011
         #region 刷新重载入
         public void ReLoadXml()
         {
-            comboBox1.Items.Clear();
-            Suggest();
             LoadData();
+            Suggest();
         }
         #endregion
 
