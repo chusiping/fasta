@@ -20,7 +20,7 @@ namespace fasta2011
         {
             Point _mousePoint = Control.MousePosition;
             int _x = control.PointToClient(_mousePoint).X + message.Length;
-            int _y = control.PointToClient(_mousePoint).Y - 50;
+            int _y = control.PointToClient(_mousePoint).Y - 300;
             tip.Show(message, control, _x, _y);
             tip.Active = true;
         }
@@ -34,8 +34,8 @@ namespace fasta2011
         public static void ShowTooltip(this Control control, ToolTip tip, string message, int durationTime)
         {
             Point _mousePoint = control.Location;
-            int _x = _mousePoint.X + message.Length * 2 ;
-            int _y = _mousePoint.Y + 20;
+            int _x = _mousePoint.X + 100 ;
+            int _y = _mousePoint.Y - 100;
             //int _x = control.PointToClient(_mousePoint).X;
             //int _y = control.PointToClient(_mousePoint).Y;
             tip.Show(message, control, _x , _y, durationTime);            

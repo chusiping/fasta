@@ -39,7 +39,6 @@ namespace fasta2011
 
             /*------------增加了新的处理方法检测添加appSettings node-------*/
             XmlNode xNode0;
-            XmlElement xElem3;
             xNode0 = xDoc.SelectSingleNode("//configuration");
             if (xNode == null)
             {

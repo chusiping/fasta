@@ -14,6 +14,7 @@ namespace fasta2011
     public abstract class DataBase
     {
         public List<Alias> AliasSet { get; set; }
+        public List<Alias> AliasSet2 { get; set; }
         public abstract void ReadData();
         public abstract int AddItem(Alias al);
         public abstract void DelItem(Alias al);
@@ -81,10 +82,14 @@ namespace fasta2011
     public class sqliteData : DataBase
     {
         FastaContext db = FastaContext.Instance;
+        FastaContext db_sync = FastaContext.Instance_sync;
         public override void ReadData()
         {
             //ToDo 富文本体较大，不使用循环载入
             AliasSet = db.AliasSet.Where(m => true).ToList();
+            AliasSet2 = db_sync.AliasSet.Where(m => true).ToList();
+            AliasSet2.ForEach(m => AliasSet.Add(m));
+                        
 
             //ToDo 富文本体较大，不使用循环载入
             string s = AliasType.txt.ToString();
@@ -108,21 +113,51 @@ namespace fasta2011
         {
             var aal = db.AliasSet.Where(u => u.Name == al.Name).FirstOrDefault();
             if (aal != null) return 2; //重复名称的
-            db.AliasSet.Add(al);
-            int rt = db.SaveChanges();
-            return rt;
+
+            if (al.Type == "exe")
+            {
+                db.AliasSet.Add(al);
+                return db.SaveChanges();
+            }
+            else
+            {
+                db_sync.AliasSet.Add(al);
+                return db_sync.SaveChanges();
+            }
         }
         public override void EditItem(Alias al, Alias NewAl)
-        {            
-            var aal = db.AliasSet.Find(al.ID);
-            aal.Name = NewAl.Name; aal.Path = NewAl.Path; aal.Type = NewAl.Type;        
-            db.SaveChanges();   
+        {
+            var aal = new Alias();
+            if (al.Type == "exe")
+            {
+                aal = db.AliasSet.Find(al.ID);
+                aal.Name = NewAl.Name; aal.Path = NewAl.Path; aal.Type = NewAl.Type;
+                db.SaveChanges();
+            }
+            else
+            {
+                aal = db_sync.AliasSet.Find(al.ID);
+                aal.Name = NewAl.Name; aal.Path = NewAl.Path; aal.Type = NewAl.Type;
+                db_sync.SaveChanges();
+            }   
         }
         public override void DelItem(Alias al)
         {
-            var aal = db.AliasSet.Find(al.ID); 
-            db.AliasSet.Remove(aal);
-            db.SaveChanges();
+            Alias aal = new Alias();
+            if (al.Type == "exe")
+            {
+                aal = db.AliasSet.Find(al.ID);
+                db.AliasSet.Remove(aal);
+                db.SaveChanges();
+            }
+            else
+            {
+                aal = db_sync.AliasSet.Find(al.ID);
+                db_sync.AliasSet.Remove(aal);
+                db_sync.SaveChanges();
+            }
+
+
         }
     }
 }

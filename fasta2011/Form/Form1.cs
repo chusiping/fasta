@@ -105,7 +105,7 @@ namespace fasta2011
                     _al = new Alias { ID = int.Parse(p.SubItems[0].Text), Name = s1, Path = s2, Type = type, AddTime = DateTime.Now };
                     break;
                 case ActType.Del:
-                    _al = new Alias { ID = int.Parse(p.SubItems[0].Text) };
+                    _al = new Alias { ID = int.Parse(p.SubItems[0].Text),Type = p.SubItems[3].Text };
                     break;
                 default:
                     break;

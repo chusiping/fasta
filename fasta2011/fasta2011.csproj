@@ -123,7 +123,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Model\ComboBoxItem.cs" />
-    <Compile Include="sqlite\sqliteData.cs" />
     <Compile Include="Func\debugModel.cs" />
     <Compile Include="xml\DoXml.cs" />
     <Compile Include="Form\Form1.cs">

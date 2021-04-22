@@ -11,12 +11,22 @@ namespace fasta2011
     public class FastaContext : DbContext
     {
         static string dbPath = $"Data Source={System.Environment.CurrentDirectory}\\fasta.db";
+        static string dbPath_sync = $"Data Source={System.Environment.CurrentDirectory}\\fasta_sync.db";
         public static FastaContext Instance
         {
             get
             {
                 DbConnection sqliteCon = SQLiteProviderFactory.Instance.CreateConnection();
                 sqliteCon.ConnectionString = dbPath;
+                return new FastaContext(sqliteCon);
+            }
+        }
+        public static FastaContext Instance_sync
+        {
+            get
+            {
+                DbConnection sqliteCon = SQLiteProviderFactory.Instance.CreateConnection();
+                sqliteCon.ConnectionString = dbPath_sync;
                 return new FastaContext(sqliteCon);
             }
         }

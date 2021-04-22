@@ -30,7 +30,7 @@ namespace fasta2011
         public static extern bool SetForegroundWindow(IntPtr hWnd);//设置此窗体为活动窗体
         //定义变量,句柄类型
         public IntPtr Handle1;
-        private DataBase db = new sqliteData(); private Alias _al;
+        private DataBase db = new sqliteData(); 
         LogMa log = new LogMa();Cmd.Func fc = new Cmd.Func();
         #endregion 
 
@@ -58,7 +58,7 @@ namespace fasta2011
         {
             if (IsFromDB) db.ReadData();
             List<Alias> ls = db.AliasSet;                      
-            comboBox1.Items.Clear();            
+            comboBox1.Items.Clear();  ///aaa          
             ls.ForEach(p => comboBox1.Items.Add(new ComboBoxItem { ID = p.ID, Text = p.Name, Value = p.Path, Type = p.Type  }));
         }
         #region Form1_Load
@@ -68,7 +68,8 @@ namespace fasta2011
             RegAdd();
             this.Text = GetAssemblyVersion();
             comboBox1.Focus();
-            Handle1 = this.Handle;            
+            Handle1 = this.Handle;
+            Thread.Sleep(1000);
             Suggest();            
         }
         #endregion
@@ -379,7 +380,7 @@ namespace fasta2011
             {
                 if (c.Type != AliasType.txt.ToString() && s == c.Name )
                 {
-                    comboBox1.ShowTooltip(toolTip1, c.Path,8000);                    
+                    comboBox1.ShowTooltip(toolTip1, c.Path,20000);                    
                     break;
                 }
             }

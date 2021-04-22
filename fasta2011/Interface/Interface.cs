@@ -10,6 +10,7 @@ namespace fasta2011
     {
         void ReLoadXml();
         void HideForm();
+        void Suggest();
     }
     public interface IForm2
     {

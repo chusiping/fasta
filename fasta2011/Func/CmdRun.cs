@@ -175,7 +175,9 @@ namespace fasta2011
                     ExeProcessCmd(s.Replace("dos:",""));  //因为历史数据问题，所有要替换dos：成空
                     break;
                 case AliasType.txt:
-                    (new Func()).Open_Form("RichForm",s);//显示富文本
+                    Alias al = new Alias { ID = cbi.ID, Name = cbi.Text, Path = cbi.Value.ToString(), Type = cbi.Type };
+
+                    (new Func()).Open_Form("RichForm",s,al);//显示富文本aaa
                     break;
                 default:
                     break;
@@ -267,7 +269,7 @@ namespace fasta2011
             }
             #endregion
 
-            public void Open_Form(string fmName, string ArgStr = "")
+            public void Open_Form(string fmName, string ArgStr = "",Alias al = null)
             {
                 bool IsOpen = false;
                 foreach (Form f in Application.OpenForms)
@@ -301,7 +303,7 @@ namespace fasta2011
                     }
                     if (fmName == "RichForm")
                     {
-                        RichForm fm1 = new RichForm(ArgStr);                        
+                        RichForm fm1 = new RichForm(ArgStr,al);                        
                         fm1.Show();
                         fm1.Focus();                        
                     }
