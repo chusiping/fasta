@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // 有关程序集的常规信息通过下列属性集
 // 控制。更改这些属性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("Fasta-Pro v2.1.3.16")]
-[assembly: AssemblyDescription("Copyright ©  2021.3")]
+[assembly: AssemblyTitle("Fasta-Pro v2.1.4.22")]
+[assembly: AssemblyDescription("Copyright ©  2021.4")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Fasta-Pro")]
-[assembly: AssemblyCopyright("Copyright ©  2021.3")]
+[assembly: AssemblyCopyright("Copyright ©  2021.4")]
 [assembly: AssemblyTrademark("Mapked.Com")]
 [assembly: AssemblyCulture("")]
 
