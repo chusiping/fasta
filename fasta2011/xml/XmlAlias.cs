@@ -110,7 +110,6 @@ namespace Zone
         public static void SaveXml(string path)
         {
             xmlDoc.Save(path);
-            Zone.DebugNew.WriteLog("保存xml成功---" + _XmlFilePath);
         }
         #endregion 
 

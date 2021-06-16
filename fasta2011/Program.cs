@@ -5,6 +5,8 @@ using System.Diagnostics;//引入Process 类
 using System.Reflection;//引入Assembly
 using System.Runtime.InteropServices;  //需要获取句柄，激活前一实例
 using System.Threading;//需要用到mutex
+using Zone;
+using System.Threading.Tasks;
 
 namespace fasta2011
 {
@@ -21,12 +23,16 @@ namespace fasta2011
         [STAThread]
         static void Main()
         {
+            
             Process instance = GetRunningInstance();
             if (instance == null)
             {
+                LogAsyncWriter.Default.Info("______________________________________________________________", "Program.cs", "");
+                LogAsyncWriter.Default.Info("程序启动：Application.Run(new Main())", "Program.cs", "");
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new Main());
+                
                 //Application.Run(new test());
             }
             else
@@ -35,7 +41,7 @@ namespace fasta2011
             }
 
 
-    
+
 
 
 
@@ -43,7 +49,6 @@ namespace fasta2011
             //Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new Form1());
 
-    
         }
         public static Process GetRunningInstance()
         {

@@ -7,6 +7,7 @@ using System.Drawing.Drawing2D;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace fasta2011
@@ -70,8 +71,9 @@ namespace fasta2011
             {
                 if (f.Name == "Main")
                 {
-                    (f as IForm).ReLoadXml(); //(this.Owner as IForm).ReLoadXml();
-                    (f as IForm).Suggest();
+                    //(f as IForm).ReLoadXml(); //(this.Owner as IForm).ReLoadXml();
+                    //(f as IForm).Suggest();
+                    Task task0 = new Task((f as IForm).LoadData2); task0.Start();
                 }
             }
         }

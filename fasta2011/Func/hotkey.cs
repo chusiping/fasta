@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;  
+using System.Windows.Forms;
+using Microsoft.Win32;
+using Zone;
+using System.Reflection;
 
 namespace fasta2011
 {
@@ -34,5 +37,26 @@ namespace fasta2011
             Shift = 4,   
             WindowsKey = 8   
         }     
-    }  
+    }
+
+    public class CommonWay
+    {
+        #region 添加启动项到注册表
+        public static void RegAdd()
+        {
+            try
+            {
+                string FullPathFile = Application.ExecutablePath;       //获取带全路径的本程序   
+                Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true).SetValue("Fast-Pro", FullPathFile);//将本程序加入到注册表的RUN中  
+                LogAsyncWriter.Default.Info("添加启动项到注册表：CommonWay.RegAdd()", "hotkey.cs", "");
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+        #endregion
+
+       
+    }
 }

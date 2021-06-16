@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Reflection;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace fasta2011
 {
@@ -259,7 +260,8 @@ namespace fasta2011
             {
                 if (f.Name == "Main")
                 {
-                    (f as IForm).ReLoadXml(); //(this.Owner as IForm).ReLoadXml();
+                    //(f as IForm).ReLoadXml(); //(this.Owner as IForm).ReLoadXml();
+                    Task task0 = new Task((f as IForm).LoadData2); task0.Start();
                 }
             }
         }

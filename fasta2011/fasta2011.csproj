@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>fasta2011</RootNamespace>
     <AssemblyName>Fasta-Pro</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Win32Resource>
     </Win32Resource>
@@ -62,6 +62,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -71,6 +72,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -113,7 +115,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Func\LogAsyncwriter.cs" />
     <Compile Include="Func\LogMM.cs" />
+    <Compile Include="Func\pMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Interface\Base.cs" />
     <Compile Include="Interface\Interface.cs" />
     <Compile Include="Config\AppSetting.cs" />
@@ -123,7 +129,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Model\ComboBoxItem.cs" />
-    <Compile Include="Func\debugModel.cs" />
     <Compile Include="xml\DoXml.cs" />
     <Compile Include="Form\Form1.cs">
       <SubType>Form</SubType>

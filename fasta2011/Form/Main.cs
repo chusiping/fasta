@@ -15,6 +15,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace fasta2011
 {
@@ -30,21 +31,11 @@ namespace fasta2011
         public static extern bool SetForegroundWindow(IntPtr hWnd);//设置此窗体为活动窗体
         //定义变量,句柄类型
         public IntPtr Handle1;
-        private DataBase db = new sqliteData(); 
+        private static DataBase Db_sqlite = new sqliteData(); 
         LogMa log = new LogMa();Cmd.Func fc = new Cmd.Func();
         #endregion 
 
-        #region 获得版本号
-        public string GetAssemblyVersion()
-        {
-            AssemblyTitleAttribute copyright = (AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute));
-            string strDebug = " - debug";
-#if !DEBUG
-            strDebug = "- Release";
-#endif               
-            return copyright.Title+strDebug;
-        }
-        #endregion 
+       
 
         #region 初始化窗体
         //******************  初始化  ******************************
@@ -54,23 +45,58 @@ namespace fasta2011
         }
         #endregion
 
-        private void LoadData(bool IsFromDB = true)   //是否从库中加载
+        #region 是否从库中加载
+        private void LoadData(bool IsFromDB = true)   
         {
-            if (IsFromDB) db.ReadData();
-            List<Alias> ls = db.AliasSet;                      
+            if (IsFromDB) Db_sqlite.ReadData();
+            List<Alias> ls = Db_sqlite.AliasSet;                      
             comboBox1.Items.Clear();  ///aaa          
             ls.ForEach(p => comboBox1.Items.Add(new ComboBoxItem { ID = p.ID, Text = p.Name, Value = p.Path, Type = p.Type  }));
         }
+        #endregion
+
+        public void LoadData2()
+        {
+            DataBase _db = new sqliteData();
+            _db.ReadData();
+            List<Alias> ls = _db.AliasSet;
+            Db_sqlite.AliasSet = _db.AliasSet;
+            this.Invoke((EventHandler)delegate { 
+                this.comboBox1.Items.Clear(); 
+                ls.ForEach(p => comboBox1.Items.Add(new ComboBoxItem { ID = p.ID, Text = p.Name, Value = p.Path, Type = p.Type }));
+            });
+           
+            
+
+
+            listcb = new List<ComboBoxItem>();
+            AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();  //数据源头          
+            ls.ForEach(p => acsc.Add(p.Name));
+            ls.ForEach(p => listcb.Add(new ComboBoxItem { Text = p.Name, Value = p.Path }));
+
+            this.Invoke((EventHandler)delegate {
+                comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;   //可用的属性有3种：Suggest Append SuggestAppend
+                comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource; //要让Textbox有自动完成的功能，必须指定AutoCompleteSource属性，预设为None，也就是不使用，总共有7种来源可选
+                comboBox1.AutoCompleteCustomSource = acsc;
+            });
+          
+
+            LogAsyncWriter.Default.Info("读取sqlite初始化数据：LoadData2()", "Main.cs", "");
+        }
+
         #region Form1_Load
         private void Form1_Load(object sender, EventArgs e)
         {
-            LoadData();
-            RegAdd();
-            this.Text = GetAssemblyVersion();
+            Task task0 = new Task(LoadData2); task0.Start();
+            //LoadData();
+            GetAssemblyVersion();
             comboBox1.Focus();
             Handle1 = this.Handle;
-            Thread.Sleep(1000);
-            Suggest();            
+            
+            //Suggest();
+
+            Task task1 = new Task(CommonWay.RegAdd);task1.Start();                          //异步加载注册表
+            LogAsyncWriter.Default.Info("Form1_Load", "Main.cs", "");
         }
         #endregion
 
@@ -106,18 +132,21 @@ namespace fasta2011
                     switch (m.WParam.ToInt32())
                     {
                         case 123:    //按下的是Alt+R 
-                            //此处填写快捷键响应代码                               
+                            //此处填写快捷键响应代码
+                            LogAsyncWriter.Default.Info("Alt+R", "Main.cs", "");
                             HideForm();
                             break;
                         case 124:    //按下的是f1   
-                            //此处填写快捷键响应代码                               
+                            //此处填写快捷键响应代码
                             fc.Open_Form("Form1"); //OpenForm("Form1");
                             break;
                         case 125:    //按下的是ctrl + f1   
                             //此处填写快捷键响应代码                               
                             fc.Open_Form("Form_JinCheng");
                             break;
-
+                        default:
+                            LogAsyncWriter.Default.Info("热键异常", "Main.cs", "");
+                            break;
                     }
                     break;
             }
@@ -135,6 +164,7 @@ namespace fasta2011
                 this.notifyIcon1.Visible = false;
                 this.TopMost = true;
                 this.ShowInTaskbar = false;
+                LogAsyncWriter.Default.Info(" HideForm 不显示", "Main.cs", "");
             }
             else                     //显示
             {
@@ -144,6 +174,7 @@ namespace fasta2011
                 this.TopMost = true;
                 this.comboBox1.Focus();
                 this.Activate();       //360对这个有影响
+                LogAsyncWriter.Default.Info(" HideForm 显示", "Main.cs", "");
             }
         }
         #endregion
@@ -171,7 +202,7 @@ namespace fasta2011
             Alias al = GetAlias();
             if (al != null)
             {
-                db.DelItem(al);
+                Db_sqlite.DelItem(al);
                 LoadData(true);
                 Suggest();
             }
@@ -180,7 +211,7 @@ namespace fasta2011
         {
             string s = comboBox1.Text.ToString();
             s = s.Replace("--d","").Trim();
-            foreach (Alias item in db.AliasSet)
+            foreach (Alias item in Db_sqlite.AliasSet)
             {
                 if (s == item.Name) return item;
             }
@@ -221,16 +252,27 @@ namespace fasta2011
         }
         #endregion 
         #region 自动匹配下拉
+        public void Suggest(DataBase _db)
+        {
+            listcb = new List<ComboBoxItem>();
+            AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();  //数据源头          
+            List<Alias> ls = _db.AliasSet; //old: List<Alias> ls = db.AliasSet;
+            ls.ForEach(p => acsc.Add(p.Name));            
+            ls.ForEach(p => listcb.Add(new ComboBoxItem { Text = p.Name,Value = p.Path  }));
+            comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;   //可用的属性有3种：Suggest Append SuggestAppend
+            comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource; //要让Textbox有自动完成的功能，必须指定AutoCompleteSource属性，预设为None，也就是不使用，总共有7种来源可选
+            comboBox1.AutoCompleteCustomSource = acsc;
+        }
         public void Suggest()
         {
             listcb = new List<ComboBoxItem>();
-            AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();            
-            List<Alias> ls = db.AliasSet;
-            ls.ForEach(p => acsc.Add(p.Name));            
-            ls.ForEach(p => listcb.Add(new ComboBoxItem { Text = p.Name,Value = p.Path  }));
-            this.comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-            this.comboBox1.AutoCompleteCustomSource = acsc;
+            AutoCompleteStringCollection acsc = new AutoCompleteStringCollection();  //数据源头          
+            List<Alias> ls = Db_sqlite.AliasSet; //old: List<Alias> ls = db.AliasSet;
+            ls.ForEach(p => acsc.Add(p.Name));
+            ls.ForEach(p => listcb.Add(new ComboBoxItem { Text = p.Name, Value = p.Path }));
+            comboBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;   //可用的属性有3种：Suggest Append SuggestAppend
+            comboBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource; //要让Textbox有自动完成的功能，必须指定AutoCompleteSource属性，预设为None，也就是不使用，总共有7种来源可选
+            comboBox1.AutoCompleteCustomSource = acsc;
         }
         #endregion 
 
@@ -240,6 +282,7 @@ namespace fasta2011
             HotKey.RegisterHotKey(Handle, 123, AppSetting.key_Alt, AppSetting.key_Word);
             HotKey.RegisterHotKey(Handle, 124, 0, System.Windows.Forms.Keys.F1);
             HotKey.RegisterHotKey(Handle, 125, HotKey.KeyModifiers.Ctrl, Keys.F1);
+            LogAsyncWriter.Default.Info("Form1_Activated:注册成功", "Main.cs", "");
         }
         #endregion 
 
@@ -277,13 +320,7 @@ namespace fasta2011
         }
         #endregion
 
-        #region 刷新重载入
-        public void ReLoadXml()
-        {
-            LoadData();
-            Suggest();
-        }
-        #endregion
+       
 
         #region 重启Restart
         private void Restart()
@@ -303,23 +340,6 @@ namespace fasta2011
             ps.Start();
         }
         #endregion
-      
-        #region 添加启动项到注册表
-        void RegAdd()
-        {
-            try
-            {
-                string FullPathFile = Application.ExecutablePath;       //获取带全路径的本程序   
-                Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true).SetValue("Fast-Pro", FullPathFile);//将本程序加入到注册表的RUN中  
-            }
-            catch (Exception)
-            {
-
-            }
-        }
-
-        #endregion
-
 
         private void toolTip1_Popup(object sender, PopupEventArgs e)
         {            
@@ -376,7 +396,7 @@ namespace fasta2011
         private void comboBox1_TextChanged(object sender, EventArgs e)
         {            
             string s = comboBox1.Text.Trim();
-            foreach (var c in db.AliasSet)
+            foreach (var c in Db_sqlite.AliasSet)
             {
                 if (c.Type != AliasType.txt.ToString() && s == c.Name )
                 {
@@ -385,6 +405,19 @@ namespace fasta2011
                 }
             }
         }
+        #region 获得并显示版本号
+        public void GetAssemblyVersion()
+        {
+            AssemblyTitleAttribute copyright = (AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute));
+            string strDebug = " - debug";
+#if !DEBUG
+            strDebug = "- Release";
+#endif
+            //return copyright.Title + strDebug;
+            this.Text = copyright.Title + strDebug;
+            LogAsyncWriter.Default.Info("获得并显示版本号：CommonWay.GetAssemblyVersion()", "hotkey.cs", "");
+        }
+        #endregion 
     }
 }
 /*  修改日志
