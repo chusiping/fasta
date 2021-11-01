@@ -291,6 +291,8 @@ namespace fasta2011
         {
             HotKey.UnregisterHotKey(Handle, 123);
             HotKey.UnregisterHotKey(Handle, 124);
+            HotKey.RegisterHotKey(Handle, 123, AppSetting.key_Alt, AppSetting.key_Word);
+            HotKey.RegisterHotKey(Handle, 124, 0, System.Windows.Forms.Keys.F1);
         }
         #endregion
         
@@ -396,6 +398,11 @@ namespace fasta2011
         private void comboBox1_TextChanged(object sender, EventArgs e)
         {            
             string s = comboBox1.Text.Trim();
+            if (Db_sqlite.AliasSet == null) 
+            {
+                MessageBox.Show("数据未加载成功！");
+                return;
+            }
             foreach (var c in Db_sqlite.AliasSet)
             {
                 if (c.Type != AliasType.txt.ToString() && s == c.Name )
@@ -428,4 +435,9 @@ namespace fasta2011
         增加autokey.xml文件,为autohotkey的快捷键做提示
     2019-3-26
         将.net框架升级为4.0
+*   2021-6-15
+        1. 改4.0 框架改为4.5
+        2. LoadData2()替换ReLoadXml()
+        3. 增加LogAsyncWriter.Default.Info日志
+        4. 增加异步加载数据处理
 */
