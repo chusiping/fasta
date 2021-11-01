@@ -203,6 +203,7 @@ namespace fasta2011
             if (al != null)
             {
                 Db_sqlite.DelItem(al);
+                MessageBox.Show("\"" + al.Name + "\" 已删除");
                 LoadData(true);
                 Suggest();
             }
@@ -210,17 +211,18 @@ namespace fasta2011
         Alias GetAlias()
         {
             string s = comboBox1.Text.ToString();
-            s = s.Replace("--d","").Trim();
+            s = s.Replace(" del","").Trim();
             foreach (Alias item in Db_sqlite.AliasSet)
             {
                 if (s == item.Name) return item;
             }
             return null;
         }
+        //删除item
         int IsExtraProcess()
         {
             string s = comboBox1.Text.ToString().Trim();
-            if (s.Contains("--d")) return 1;
+            if (s.Contains(" del")) return 1;
             return 0;
         }
         void RunAlias(KeyEventArgs e)
