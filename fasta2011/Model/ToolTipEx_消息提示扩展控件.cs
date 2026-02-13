@@ -33,12 +33,9 @@ namespace fasta2011
         /// <param name="durationTime">保持提示的持续时间</param>
         public static void ShowTooltip(this Control control, ToolTip tip, string message, int durationTime)
         {
-            Point _mousePoint = control.Location;
-            int _x = _mousePoint.X + 100 ;
-            int _y = _mousePoint.Y - 100;
-            //int _x = control.PointToClient(_mousePoint).X;
-            //int _y = control.PointToClient(_mousePoint).Y;
-            tip.Show(message, control, _x , _y, durationTime);            
+            int x = control.Width / 2 + 300;
+            int y = -control.Height + 40;   // 上方 10px
+            tip.Show(message, control, x, y, durationTime);
             tip.Active = true;
         }
         /// <summary>

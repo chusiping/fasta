@@ -16,6 +16,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using fasta2011.Model;
 
 namespace fasta2011
 {
@@ -402,7 +403,8 @@ namespace fasta2011
             string s = comboBox1.Text.Trim();
             if (Db_sqlite.AliasSet == null) 
             {
-                MessageBox.Show("数据未加载成功！");
+                comboBox1.ShowTooltip(toolTip1, "数据未加载成功！",3000);   
+                // ToastTool.Show(comboBox1, "数据未加载成功！", 3000);
                 return;
             }
             foreach (var c in Db_sqlite.AliasSet)
@@ -418,7 +420,7 @@ namespace fasta2011
         public void GetAssemblyVersion()
         {
             AssemblyTitleAttribute copyright = (AssemblyTitleAttribute)AssemblyTitleAttribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyTitleAttribute));
-            string strDebug = " - debug";
+            string strDebug = " - 测试版";
 #if !DEBUG
             strDebug = "- Release";
 #endif

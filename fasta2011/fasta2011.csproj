@@ -124,6 +124,9 @@
     <Compile Include="Interface\Interface.cs" />
     <Compile Include="Config\AppSetting.cs" />
     <Compile Include="Func\CmdRun.cs" />
+    <Compile Include="Model\Toast.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Model\ToolTipEx_消息提示扩展控件.cs" />
     <Compile Include="Model\ComboBoxEx.cs">
       <SubType>Component</SubType>
