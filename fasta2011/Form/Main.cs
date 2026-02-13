@@ -20,8 +20,107 @@ using fasta2011.Model;
 
 namespace fasta2011
 {
+    
+
     public partial class Main : Form,IForm
     {
+        private const int HOTKEY_ALT_R = 123;
+        private const int HOTKEY_F1 = 124;
+        private const int HOTKEY_CTRL_F1 = 125;
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            RegisterHotkeys();
+        }
+        private void RegisterHotkeys()
+        {
+            bool r1 = HotKey.RegisterHotKey(this.Handle, HOTKEY_ALT_R, AppSetting.key_Alt, AppSetting.key_Word);
+            bool r2 = HotKey.RegisterHotKey(this.Handle, HOTKEY_F1, 0, Keys.F1);
+            bool r3 = HotKey.RegisterHotKey(this.Handle, HOTKEY_CTRL_F1, HotKey.KeyModifiers.Ctrl, Keys.F1);
+
+            if (!r1 || !r2 || !r3)
+            {
+                MessageBox.Show("热键注册失败，可能被占用！");
+            }
+        }
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            HotKey.UnregisterHotKey(this.Handle, HOTKEY_ALT_R);
+            HotKey.UnregisterHotKey(this.Handle, HOTKEY_F1);
+            HotKey.UnregisterHotKey(this.Handle, HOTKEY_CTRL_F1);
+
+            base.OnHandleDestroyed(e);
+        }
+
+        const int WM_SYSCOMMAND = 0x112;
+        const int SC_CLOSE = 0xF060;
+        const int SC_MINIMIZE = 0xF020;
+        const int SC_MAXIMIZE = 0xF030;
+        protected override void WndProc(ref Message m)
+        {
+            //重置最小化按钮
+            if (m.Msg == WM_SYSCOMMAND)
+            {
+                if (m.WParam.ToInt32() == SC_MINIMIZE)
+                {
+                    this.WindowState = FormWindowState.Normal;
+                    fc.Open_Form("Form1");
+                    return;
+                }
+                if (m.WParam.ToInt32() == SC_CLOSE)
+                {
+                    IsSureExitApp();
+                    return;
+                }
+            }    
+
+            if (m.Msg == 0x0312) // WM_HOTKEY
+            {
+                switch (m.WParam.ToInt32())
+                {
+                    case HOTKEY_ALT_R:
+                        ToggleWindow();
+                        break;
+
+                    case HOTKEY_F1:
+                        MessageBox.Show("F1 按下");
+                        break;
+
+                    case HOTKEY_CTRL_F1:
+                        MessageBox.Show("Ctrl+F1 按下");
+                        break;
+                }
+            }
+
+            base.WndProc(ref m);
+        }
+
+        private void ToggleWindow()
+        {
+            if (this.Visible)
+            {
+                this.Hide();
+            }
+            else
+            {
+                this.Show();
+                this.WindowState = FormWindowState.Normal;
+                this.Activate();
+            }
+        }
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Escape)
+            {
+                this.Hide();
+                return true;
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+
         #region 定义变量 委托
         private delegate void DG_ReadXml(XmlDocument doc1, string s, ref AutoCompleteStringCollection acsc, ref List<ComboBoxItem> listcb);
         List<ComboBoxItem> listcb = null;        
@@ -102,59 +201,7 @@ namespace fasta2011
         #endregion
 
 
-        #region 重载最小化按钮
-        const int WM_SYSCOMMAND = 0x112;
-        const int SC_CLOSE = 0xF060;
-        const int SC_MINIMIZE = 0xF020;
-        const int SC_MAXIMIZE = 0xF030;
-        protected override void WndProc(ref Message m)
-        {
-            if (m.Msg == WM_SYSCOMMAND)
-            {
-                if (m.WParam.ToInt32() == SC_MINIMIZE)
-                {
-                    this.WindowState = FormWindowState.Normal;
-                    fc.Open_Form("Form1");
-                    return;
-                }
-                if (m.WParam.ToInt32() == SC_CLOSE)
-                {
-                    IsSureExitApp();
-                    return;
-                }
-            }
-            /************************************ 响应热键 按快捷键**********************************/
-            const int WM_HOTKEY = 0x0312;
-            //Console.WriteLine("m.Msg : " + m.Msg);
-            if (m.WParam == null) return;
-            switch (m.Msg)
-            {
-                case WM_HOTKEY:
-                    switch (m.WParam.ToInt32())
-                    {
-                        case 123:    //按下的是Alt+R 
-                            //此处填写快捷键响应代码
-                            LogAsyncWriter.Default.Info("Alt+R", "Main.cs", "");
-                            HideForm();
-                            break;
-                        case 124:    //按下的是f1   
-                            //此处填写快捷键响应代码
-                            fc.Open_Form("Form1"); //OpenForm("Form1");
-                            break;
-                        case 125:    //按下的是ctrl + f1   
-                            //此处填写快捷键响应代码                               
-                            fc.Open_Form("Form_JinCheng");
-                            break;
-                        default:
-                            LogAsyncWriter.Default.Info("热键异常", "Main.cs", "");
-                            break;
-                    }
-                    break;
-            }
-
-            base.WndProc(ref m);
-        }
-        #endregion
+        
 
         #region Event 隐藏窗口
         public void HideForm()
@@ -278,26 +325,6 @@ namespace fasta2011
             comboBox1.AutoCompleteCustomSource = acsc;
         }
         #endregion 
-
-        #region  注册热键
-        private void Form1_Activated(object sender, EventArgs e)
-        {
-            HotKey.RegisterHotKey(Handle, 123, AppSetting.key_Alt, AppSetting.key_Word);
-            HotKey.RegisterHotKey(Handle, 124, 0, System.Windows.Forms.Keys.F1);
-            HotKey.RegisterHotKey(Handle, 125, HotKey.KeyModifiers.Ctrl, Keys.F1);
-            LogAsyncWriter.Default.Info("Form1_Activated:注册成功", "Main.cs", "");
-        }
-        #endregion 
-
-        #region 反注册热键
-        private void Form1_Leave(object sender, EventArgs e)
-        {
-            HotKey.UnregisterHotKey(Handle, 123);
-            HotKey.UnregisterHotKey(Handle, 124);
-            HotKey.RegisterHotKey(Handle, 123, AppSetting.key_Alt, AppSetting.key_Word);
-            HotKey.RegisterHotKey(Handle, 124, 0, System.Windows.Forms.Keys.F1);
-        }
-        #endregion
         
         #region 失去窗口焦点
         private void Form1_Deactivate(object sender, EventArgs e)
