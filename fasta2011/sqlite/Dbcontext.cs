@@ -10,8 +10,10 @@ namespace fasta2011
 
     public class FastaContext : DbContext
     {
-        static string dbPath = $"Data Source={System.Environment.CurrentDirectory}\\fasta.db";
-        static string dbPath_sync = $"Data Source={System.Environment.CurrentDirectory}\\fasta_sync.db";
+        // static string dbPath = $"Data Source={System.Environment.CurrentDirectory}\\fasta.db";
+        // static string dbPath_sync = $"Data Source={System.Environment.CurrentDirectory}\\fasta_sync.db";
+        static string dbPath = $"Data Source={AppDomain.CurrentDomain.BaseDirectory}fasta.db";
+        static string dbPath_sync = $"Data Source={AppDomain.CurrentDomain.BaseDirectory}fasta_sync.db";
         public static FastaContext Instance
         {
             get
